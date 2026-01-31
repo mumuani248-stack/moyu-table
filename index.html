@@ -2,40 +2,66 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>墨雨笙花百業戰配置表 - 週末分身版</title>
+    <title>墨雨笙花百業戰配置表 - 視覺強化版</title>
     <style>
         body { font-family: sans-serif; background: #f4f4f9; padding: 10px; }
         .container { max-width: 1400px; margin: auto; }
         .main-layout { display: flex; gap: 15px; align-items: flex-start; }
+        
+        /* 左側名單池 */
         .pool-section { 
             width: 280px; background: #fff; padding: 15px; border-radius: 8px; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 10px; 
         }
+        
         .board { flex-grow: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         .input-group { margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
         input[type="text"], input[type="number"] { width: 90%; padding: 8px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 4px; }
         .day-check { display: inline-flex; align-items: center; gap: 5px; margin-right: 10px; font-size: 0.85rem; }
-        .column { background: #e2e2e2; border-radius: 8px; padding: 12px; min-height: 400px; display: flex; flex-direction: column; }
+
+        /* 隊伍欄位特效 */
+        .column { 
+            background: #e2e2e2; border-radius: 8px; padding: 12px; min-height: 400px; 
+            display: flex; flex-direction: column; transition: all 0.3s ease; 
+        }
         .column.sat { background: #fff0f3; }
         .column.sun { background: #f0f4ff; }
+        .column.highlight { background: #d4edda !important; transform: scale(1.02); } /* 分配時的閃爍特效 */
+
         .column h2 { text-align: center; font-size: 1.1rem; margin-top: 0; color: #333; }
         .stat-bar { background: rgba(255,255,255,0.6); text-align: center; font-size: 0.8rem; padding: 4px; border-radius: 4px; margin-bottom: 10px; }
         .item-list { flex-grow: 1; min-height: 350px; }
+
+        /* 卡片與按鈕特效 */
         .card { 
             background: white; border-radius: 5px; padding: 10px; margin-bottom: 8px; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 8px solid #007bff; position: relative;
+            transition: opacity 0.3s;
         }
         .card p { margin: 3px 0; font-size: 0.85rem; }
         .card .name { font-weight: bold; font-size: 0.95rem; }
+
         .assign-btns { margin-top: 8px; display: flex; gap: 4px; flex-wrap: wrap; }
-        .assign-btns button { padding: 2px 6px; font-size: 11px; border: none; border-radius: 3px; cursor: pointer; color: white; }
+        .assign-btns button { 
+            padding: 3px 8px; font-size: 11px; border: none; border-radius: 3px; cursor: pointer; color: white;
+            transition: all 0.2s;
+        }
         .btn-sat { background: #e91e63; }
         .btn-sun { background: #3f51b5; }
+
+        /* 已選中狀態特效 */
+        .btn-assigned { 
+            background: #adb5bd !important; 
+            cursor: not-allowed !important; 
+            opacity: 0.6;
+        }
+
         .del-btn {
             position: absolute; top: 5px; right: 5px;
             background: #ff4d4d; color: white; border: none; border-radius: 50%;
             width: 18px; height: 18px; font-size: 10px; cursor: pointer;
         }
+        
         button#addBtn { width: 100%; background: #007bff; margin-top: 5px; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; }
         .export-section { margin-top: 20px; text-align: center; }
         #output { width: 100%; height: 100px; display: none; margin-top: 10px; }
@@ -131,39 +157,51 @@
         return colors[style] || '#007bff';
     };
 
-    // 新增成員
-    document.getElementById('addBtn').onclick = () => {
-        const name = document.getElementById('pName').value;
-        const power = parseInt(document.getElementById('pPower').value);
-        const style = document.getElementById('pStyle').value;
-        const days = Array.from(document.querySelectorAll('input[name="pDay"]:checked')).map(n => n.value);
-        if (!name || isNaN(power) || days.length === 0) return alert("請填寫完整資訊並勾選日期");
-        push(membersRef, { name, power, style, days });
-        document.getElementById('pName').value = '';
-        document.getElementById('pPower').value = '';
-        document.querySelectorAll('input[name="pDay"]').forEach(el => el.checked = false);
-    };
+    // --- 核心邏輯：名單與分配狀態的聯動渲染 ---
+    let globalAssigns = {};
 
-    // 渲染名單
+    onValue(assignsRef, (snapshot) => {
+        globalAssigns = snapshot.val() || {};
+        renderPool(); // 每次隊伍變動，都要重新刷名單按鈕狀態
+        renderTeams(); // 刷隊伍顯示
+    });
+
     onValue(membersRef, (snapshot) => {
-        const pool = document.getElementById('poolList');
-        pool.innerHTML = '';
-        if (snapshot.exists()) {
-            const data = snapshot.val();
+        renderPool(snapshot.val());
+    });
+
+    function renderPool(memberData) {
+        get(membersRef).then(snap => {
+            const data = snap.val();
+            const pool = document.getElementById('poolList');
+            pool.innerHTML = '';
+            if (!data) return;
+
             for (let id in data) {
                 const m = data[id];
+                
+                // 檢查此人是否在六或日已分配
+                let isSatAssigned = Object.values(globalAssigns).some(a => a.mid === id && a.target.startsWith('sat'));
+                let isSunAssigned = Object.values(globalAssigns).some(a => a.mid === id && a.target.startsWith('sun'));
+
                 const card = document.createElement('div');
                 card.className = "card";
                 card.style.borderLeftColor = getStyleColor(m.style);
+                
                 let btns = '';
                 if(m.days.includes('六')) {
-                    btns += `<button class="btn-sat" onclick="assign('${id}','sat1')">六1</button>`;
-                    btns += `<button class="btn-sat" onclick="assign('${id}','sat2')">六2</button>`;
+                    const cls = isSatAssigned ? "btn-sat btn-assigned" : "btn-sat";
+                    const txt = isSatAssigned ? "已在隊" : "分配";
+                    btns += `<button class="${cls}" onclick="assign('${id}','sat1')">六1${txt}</button>`;
+                    btns += `<button class="${cls}" onclick="assign('${id}','sat2')">六2${txt}</button>`;
                 }
                 if(m.days.includes('日')) {
-                    btns += `<button class="btn-sun" onclick="assign('${id}','sun1')">日1</button>`;
-                    btns += `<button class="btn-sun" onclick="assign('${id}','sun2')">日2</button>`;
+                    const cls = isSunAssigned ? "btn-sun btn-assigned" : "btn-sun";
+                    const txt = isSunAssigned ? "已在隊" : "分配";
+                    btns += `<button class="${cls}" onclick="assign('${id}','sun1')">日1${txt}</button>`;
+                    btns += `<button class="${cls}" onclick="assign('${id}','sun2')">日2${txt}</button>`;
                 }
+
                 card.innerHTML = `
                     <button class="del-btn" onclick="deleteMember('${id}')">✕</button>
                     <p class="name">${m.name} <small>[${m.days.join('')}]</small></p>
@@ -172,86 +210,83 @@
                 `;
                 pool.appendChild(card);
             }
-        }
-    });
+        });
+    }
 
-    // 渲染分配區
-    onValue(assignsRef, (snapshot) => {
+    function renderTeams() {
         const ids = ['sat1', 'sat2', 'sun1', 'sun2'];
         const stats = { sat1:0, sat2:0, sun1:0, sun2:0 };
         const counts = { sat1:0, sat2:0, sun1:0, sun2:0 };
         ids.forEach(id => document.getElementById(id).innerHTML = '');
-        if (snapshot.exists()) {
-            const data = snapshot.val();
-            for (let aid in data) {
-                const a = data[aid];
-                const container = document.getElementById(a.target);
-                if (!container) continue;
-                stats[a.target] += a.power;
-                counts[a.target]++;
-                const card = document.createElement('div');
-                card.className = "card";
-                card.style.borderLeftColor = getStyleColor(a.style);
-                card.innerHTML = `
-                    <button class="del-btn" onclick="unassign('${aid}')">✕</button>
-                    <p class="name">${a.name}</p>
-                    <p>戰力: ${a.power} | ${a.style}</p>
-                `;
-                container.appendChild(card);
-            }
+
+        for (let aid in globalAssigns) {
+            const a = globalAssigns[aid];
+            const container = document.getElementById(a.target);
+            if (!container) continue;
+            stats[a.target] += a.power;
+            counts[a.target]++;
+            const card = document.createElement('div');
+            card.className = "card";
+            card.style.borderLeftColor = getStyleColor(a.style);
+            card.innerHTML = `
+                <button class="del-btn" onclick="unassign('${aid}')">✕</button>
+                <p class="name">${a.name}</p>
+                <p>戰力: ${a.power} | ${a.style}</p>
+            `;
+            container.appendChild(card);
         }
         ids.forEach(id => {
             document.getElementById(`stat-${id}`).innerText = `戰力: ${stats[id].toLocaleString()} | ${counts[id]}人`;
         });
-    });
+    }
 
-    // 分配邏輯（含同日重複判定）
+    // 分配與特效
     window.assign = async (mid, targetTeam) => {
-        const snap = await get(assignsRef);
-        const currentAssigns = snap.val() || {};
-        
-        // 判定該成員在目標日期是否已有隊伍
-        // 取得目標日期的前綴（例如 'sat1' -> 'sat'）
         const targetPrefix = targetTeam.substring(0, 3); 
         
-        for (let aid in currentAssigns) {
-            const a = currentAssigns[aid];
-            if (a.mid === mid) {
-                const assignedPrefix = a.target.substring(0, 3);
-                if (assignedPrefix === targetPrefix) {
-                    const dayFull = targetPrefix === 'sat' ? '星期六' : '星期日';
-                    alert(`⚠️ 分配失敗！\n成員已經在 ${dayFull} 的別隊了。同一天只能參加一隊。`);
-                    return; // 終止分配
-                }
-            }
+        // 檢查重複
+        const alreadyAssigned = Object.values(globalAssigns).some(a => a.mid === mid && a.target.startsWith(targetPrefix));
+        if (alreadyAssigned) {
+            alert("⚠️ 該成員這一天已經有隊伍了！");
+            return;
         }
 
-        // 通過檢查，執行分配
-        get(ref(db, `members/${mid}`)).then(mSnap => {
-            if(mSnap.exists()) push(assignsRef, { ...mSnap.val(), mid: mid, target: targetTeam });
-        });
+        // 執行分配
+        const mSnap = await get(ref(db, `members/${mid}`));
+        if(mSnap.exists()) {
+            // 特效：目標隊伍閃爍
+            const targetCol = document.getElementById('col-' + targetTeam);
+            targetCol.classList.add('highlight');
+            setTimeout(() => targetCol.classList.remove('highlight'), 600);
+            
+            push(assignsRef, { ...mSnap.val(), mid: mid, target: targetTeam });
+        }
+    };
+
+    // 其他功能...
+    document.getElementById('addBtn').onclick = () => {
+        const name = document.getElementById('pName').value;
+        const power = parseInt(document.getElementById('pPower').value);
+        const style = document.getElementById('pStyle').value;
+        const days = Array.from(document.querySelectorAll('input[name="pDay"]:checked')).map(n => n.value);
+        if (!name || isNaN(power) || days.length === 0) return alert("請填寫完整資訊");
+        push(membersRef, { name, power, style, days });
+        document.getElementById('pName').value = '';
+        document.getElementById('pPower').value = '';
+        document.querySelectorAll('input[name="pDay"]').forEach(el => el.checked = false);
     };
 
     window.unassign = (aid) => remove(ref(db, `assigns/${aid}`));
 
     window.deleteMember = (mid) => {
-        if(checkAdmin()) {
-            if(confirm("確定移除此成員及其所有分配紀錄嗎？")) {
-                remove(ref(db, `members/${mid}`));
-                get(assignsRef).then(snap => {
-                    if(snap.exists()){
-                        const data = snap.val();
-                        for(let aid in data) if(data[aid].mid === mid) remove(ref(db, `assigns/${aid}`));
-                    }
-                });
-            }
+        if(checkAdmin() && confirm("確定移除此成員？")) {
+            remove(ref(db, `members/${mid}`));
+            for(let aid in globalAssigns) if(globalAssigns[aid].mid === mid) remove(ref(db, `assigns/${aid}`));
         }
     };
 
     document.getElementById('resetBtn').onclick = () => {
-        if(checkAdmin()) {
-            if(confirm("確定要清空「所有隊伍」嗎？")) set(assignsRef, null);
-        }
+        if(checkAdmin() && confirm("確定清空隊伍？")) set(assignsRef, null);
     };
 
     document.getElementById('exportBtn').onclick = () => {
