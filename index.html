@@ -17,15 +17,18 @@
         .item-list { flex-grow: 1; min-height: 450px; border: 2px dashed transparent; }
         .item-list.drag-over { background: #d0d0d0; border-color: #007bff; }
         
+        /* 基礎卡片樣式 */
         .card { 
             background: white; border-radius: 5px; padding: 10px; margin-bottom: 10px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: grab; border-left: 5px solid #007bff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: grab; 
+            border-left: 8px solid #007bff; /* 預設顏色 */
             position: relative;
         }
         .card:active { cursor: grabbing; }
         .card p { margin: 5px 0; font-size: 0.9rem; }
         .card .name { font-weight: bold; font-size: 1rem; padding-right: 20px; }
         
+        /* 刪除按鈕樣式 */
         .del-btn {
             position: absolute; top: 5px; right: 5px;
             background: #ff4d4d; color: white; border: none; border-radius: 50%;
@@ -105,6 +108,19 @@
     const db = getDatabase(app);
     const playersRef = ref(db, 'players');
 
+    // 取得顏色函式
+    const getStyleColor = (style) => {
+        const colors = {
+            '九九': '#00008B', // 深藍
+            '無名': '#87CEFA', // 淺藍
+            '威威': '#FFA500', // 橘色
+            '霖霖': '#32CD32', // 綠色
+            '玉玉': '#006400', // 深綠色
+            '雙刀': '#800080'  // 紫色
+        };
+        return colors[style] || '#007bff'; // 如果沒匹配到，回傳預設藍色
+    };
+
     let isAdmin = false;
     const checkAdmin = () => {
         if (isAdmin) return true;
@@ -159,6 +175,9 @@
                 card.className = "card";
                 card.draggable = true;
                 card.id = key;
+                
+                // 套用流派顏色到 border-left
+                card.style.borderLeftColor = getStyleColor(p.style);
                 
                 card.innerHTML = `
                     <button class="del-btn" title="移除名單">✕</button>
@@ -222,7 +241,6 @@
     document.getElementById('resetBtn').onclick = async () => {
         if (!checkAdmin()) return;
         if (!confirm("確定要將所有已分配名單（一隊、二隊）移回待分配嗎？")) return;
-        
         const snapshot = await get(playersRef);
         const data = snapshot.val();
         if (!data) return;
