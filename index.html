@@ -2,107 +2,142 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>墨雨笙花百業戰配置表 - 繁中精簡版</title>
+    <title>墨雨笙花百業戰配置表 - 華麗動態版</title>
     <style>
-        body { font-family: sans-serif; background: #f4f4f9; padding: 10px; }
+        :root {
+            --sat-color: #ffafbd;
+            --sun-color: #a1c4fd;
+            --glow-speed: 3s;
+        }
+
+        body { font-family: "Microsoft JhengHei", sans-serif; background: #f0f2f5; padding: 10px; color: #444; }
         .container { max-width: 1400px; margin: auto; }
-        .main-layout { display: flex; gap: 15px; align-items: flex-start; }
         
-        /* 左側名單池：寬度減少一半 */
+        h1 { text-align: center; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); margin-bottom: 20px; }
+
+        .main-layout { display: flex; gap: 20px; align-items: flex-start; }
+        
+        /* 左側名單池：簡潔透明感 */
         .pool-section { 
-            width: 150px; background: #fff; padding: 10px; border-radius: 8px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 10px; 
+            width: 160px; background: rgba(255,255,255,0.9); padding: 15px; border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: sticky; top: 10px; 
+            border: 1px solid #ddd;
         }
         
-        .board { flex-grow: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-        .input-group { margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        input[type="text"], input[type="number"] { width: 85%; padding: 6px; margin-bottom: 5px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.8rem; }
-        .day-check { display: inline-flex; align-items: center; gap: 3px; margin-right: 5px; font-size: 0.75rem; }
+        .board { flex-grow: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
 
-        /* 隊隊伍欄位特效 */
+        /* 動態流光邊框容器 */
         .column { 
-            background: #e2e2e2; border-radius: 8px; padding: 12px; min-height: 400px; 
-            display: flex; flex-direction: column; transition: all 0.3s ease; 
+            position: relative;
+            background: #fff; border-radius: 15px; padding: 15px; min-height: 450px; 
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            z-index: 1;
         }
-        .column.sat { background: #fff0f3; }
-        .column.sun { background: #f0f4ff; }
-        .column.highlight { background: #d4edda !important; transform: scale(1.02); }
 
-        .column h2 { text-align: center; font-size: 1.1rem; margin-top: 0; color: #333; }
-        .stat-bar { background: rgba(255,255,255,0.6); text-align: center; font-size: 0.8rem; padding: 4px; border-radius: 4px; margin-bottom: 10px; }
+        /* 邊框動畫效果 */
+        .column::before {
+            content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: conic-gradient(transparent, transparent, transparent, #007bff);
+            animation: rotate var(--glow-speed) linear infinite; z-index: -2;
+        }
+        .column.sat::before { background: conic-gradient(transparent, transparent, transparent, #e91e63); }
+        .column.sun::before { background: conic-gradient(transparent, transparent, transparent, #3f51b5); }
+
+        .column::after {
+            content: ""; position: absolute; inset: 4px; background: #fff; border-radius: 12px; z-index: -1;
+        }
+
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+
+        .column h2 { text-align: center; font-size: 1.2rem; margin-bottom: 10px; font-weight: bold; color: #333; }
+        .column.sat h2 { color: #e91e63; }
+        .column.sun h2 { color: #3f51b5; }
+
+        .stat-bar { background: #f8f9fa; text-align: center; font-size: 0.85rem; padding: 6px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed #ccc; }
         .item-list { flex-grow: 1; min-height: 350px; }
 
-        /* 卡片樣式 */
+        /* 卡片裝飾 */
         .card { 
-            background: white; border-radius: 5px; padding: 8px; margin-bottom: 8px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #007bff; position: relative;
+            background: white; border-radius: 8px; padding: 10px; margin-bottom: 10px; 
+            box-shadow: 0 3px 6px rgba(0,0,0,0.05); border-left: 6px solid #007bff; position: relative;
+            transition: transform 0.2s; border: 1px solid #eee;
         }
-        .card p { margin: 2px 0; font-size: 0.75rem; line-height: 1.2; }
-        .card .name { font-weight: bold; font-size: 0.85rem; display: block; overflow: hidden; text-overflow: ellipsis; }
+        .card:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .card p { margin: 3px 0; font-size: 0.8rem; }
+        .card .name { font-weight: bold; font-size: 0.9rem; color: #222; }
 
-        .assign-btns { margin-top: 5px; display: flex; gap: 3px; flex-wrap: wrap; }
-        .assign-btns button { 
-            padding: 2px 4px; font-size: 10px; border: none; border-radius: 3px; cursor: pointer; color: white;
-            flex: 1 1 45%;
-        }
-        .btn-sat { background: #e91e63; }
-        .btn-sun { background: #3f51b5; }
-        .btn-assigned { background: #adb5bd !important; cursor: not-allowed !important; opacity: 0.6; }
+        /* 按鈕視覺 */
+        button { transition: all 0.2s; cursor: pointer; border: none; }
+        button:hover { opacity: 0.8; transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
+
+        .assign-btns { margin-top: 8px; display: flex; gap: 4px; flex-wrap: wrap; }
+        .assign-btns button { padding: 4px 6px; font-size: 11px; border-radius: 4px; color: white; flex: 1 1 45%; }
+        .btn-sat { background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); }
+        .btn-sun { background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); }
+        .btn-assigned { background: #d1d1d1 !important; cursor: not-allowed !important; transform: none !important; }
 
         .del-btn {
-            position: absolute; top: 2px; right: 2px;
-            background: #ff4d4d; color: white; border: none; border-radius: 50%;
-            width: 15px; height: 15px; font-size: 9px; cursor: pointer;
+            position: absolute; top: 5px; right: 5px;
+            background: #ff4d4d; color: white; border-radius: 50%;
+            width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center;
         }
         
-        button#addBtn { width: 100%; background: #007bff; margin-top: 5px; color: white; border: none; padding: 6px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
-        .export-section { margin-top: 20px; text-align: center; }
-        #output { width: 100%; height: 120px; display: none; margin-top: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; background: #fff; }
+        #addBtn { width: 100%; background: #333; color: white; padding: 8px; border-radius: 6px; margin-top: 10px; font-weight: bold; }
+        .input-group input { width: 90%; padding: 7px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 5px; }
+
+        .export-section { margin-top: 30px; text-align: center; padding-bottom: 50px; }
+        #output { width: 80%; height: 150px; display: none; margin: 15px auto; border-radius: 8px; border: 2px solid #ddd; font-family: monospace; }
+
+        /* 高亮特效 */
+        .column.highlight::after { background: #f0fff4; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🌸 墨雨笙花百業配置</h1>
+    <h1>🌸 墨雨笙花 · 百業配置表</h1>
     
     <div class="main-layout">
         <div class="pool-section">
             <div class="input-group">
-                <input type="text" id="pName" placeholder="名稱">
-                <input type="number" id="pPower" placeholder="戰力">
-                <input type="text" id="pStyle" list="styleOptions" placeholder="流派">
+                <input type="text" id="pName" placeholder="成員名稱">
+                <input type="number" id="pPower" placeholder="戰力數值">
+                <input type="text" id="pStyle" list="styleOptions" placeholder="選擇流派">
                 <datalist id="styleOptions">
                     <option value="威威"><option value="玉玉"><option value="霖霖">
                     <option value="無名"><option value="九九"><option value="雙刀">
                 </datalist>
-                <div style="margin: 5px 0;">
+                <div style="margin: 8px 0; display: flex; justify-content: space-around;">
                     <label class="day-check"><input type="checkbox" name="pDay" value="六"> 六</label>
                     <label class="day-check"><input type="checkbox" name="pDay" value="日"> 日</label>
                 </div>
-                <button id="addBtn">新增成員</button>
+                <button id="addBtn">✨ 加入名冊</button>
             </div>
-            <h4>待分配名單</h4>
+            <hr style="border: 0.5px solid #eee;">
+            <h4 style="text-align: center; font-size: 0.9rem;">待命成員</h4>
             <div id="poolList"></div>
         </div>
 
         <div class="board">
             <div class="column sat" id="col-sat1">
-                <h2>禮拜六 - 一隊</h2>
+                <h2>禮拜六 一隊</h2>
                 <div class="stat-bar" id="stat-sat1">戰力: 0 | 0人</div>
                 <div class="item-list" id="sat1"></div>
             </div>
             <div class="column sat" id="col-sat2">
-                <h2>禮拜六 - 二隊</h2>
+                <h2>禮拜六 二隊</h2>
                 <div class="stat-bar" id="stat-sat2">戰力: 0 | 0人</div>
                 <div class="item-list" id="sat2"></div>
             </div>
             <div class="column sun" id="col-sun1">
-                <h2>禮拜日 - 一隊</h2>
+                <h2>禮拜日 一隊</h2>
                 <div class="stat-bar" id="stat-sun1">戰力: 0 | 0人</div>
                 <div class="item-list" id="sun1"></div>
             </div>
             <div class="column sun" id="col-sun2">
-                <h2>禮拜日 - 二隊</h2>
+                <h2>禮拜日 二隊</h2>
                 <div class="stat-bar" id="stat-sun2">戰力: 0 | 0人</div>
                 <div class="item-list" id="sun2"></div>
             </div>
@@ -110,9 +145,9 @@
     </div>
 
     <div class="export-section">
-        <button style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;" id="exportBtn">輸出結果</button>
-        <button style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;" id="resetBtn">清空隊伍</button>
-        <textarea id="output"></textarea>
+        <button style="background: #28a745; color: white; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 1rem;" id="exportBtn">📋 輸出配置結果</button>
+        <button style="background: #6c757d; color: white; padding: 12px 25px; border-radius: 6px;" id="resetBtn">🗑️ 清空隊伍</button>
+        <textarea id="output" readonly></textarea>
     </div>
 </div>
 
@@ -192,8 +227,8 @@
                 card.innerHTML = `
                     <button class="del-btn" onclick="deleteMember('${id}')">✕</button>
                     <p class="name">${m.name}</p>
-                    <p>戰:${m.power}</p>
-                    <p>職:${m.style}</p>
+                    <p>戰: ${m.power.toLocaleString()}</p>
+                    <p>職: ${m.style}</p>
                     <div class="assign-btns">${btns}</div>
                 `;
                 pool.appendChild(card);
@@ -219,12 +254,12 @@
             card.innerHTML = `
                 <button class="del-btn" onclick="unassign('${aid}')">✕</button>
                 <p class="name">${a.name}</p>
-                <p>戰力: ${a.power} | ${a.style}</p>
+                <p>戰力: ${a.power.toLocaleString()} | ${a.style}</p>
             `;
             container.appendChild(card);
         }
         ids.forEach(id => {
-            document.getElementById(`stat-${id}`).innerText = `戰力: ${stats[id].toLocaleString()} | ${counts[id]}人`;
+            document.getElementById(`stat-${id}`).innerText = `總戰力: ${stats[id].toLocaleString()} | ${counts[id]} 人`;
         });
     }
 
@@ -256,30 +291,28 @@
 
     window.unassign = (aid) => remove(ref(db, `assigns/${aid}`));
     window.deleteMember = (mid) => {
-        if(checkAdmin() && confirm("確定刪除？")) {
+        if(checkAdmin() && confirm("確定刪除成員？")) {
             remove(ref(db, `members/${mid}`));
             for(let aid in globalAssigns) if(globalAssigns[aid].mid === mid) remove(ref(db, `assigns/${aid}`));
         }
     };
-    document.getElementById('resetBtn').onclick = () => { if(checkAdmin() && confirm("清空隊伍？")) set(assignsRef, null); };
+    document.getElementById('resetBtn').onclick = () => { if(checkAdmin() && confirm("確定要清空所有已分配隊伍嗎？")) set(assignsRef, null); };
 
-    // --- 中文輸出邏輯 ---
     document.getElementById('exportBtn').onclick = () => {
-        let res = "--- 🌸 墨雨笙花百業配置結果 ---\n";
+        let res = "--- 🌸 墨雨笙花 百業戰配置結果 ---\n";
         const chineseTitles = {
-            'sat1': '【禮拜六 一隊】',
-            'sat2': '【禮拜六 二隊】',
-            'sun1': '【禮拜日 一隊】',
-            'sun2': '【禮拜日 二隊】'
+            'sat1': '【 禮拜六 一隊 】',
+            'sat2': '【 禮拜六 二隊 】',
+            'sun1': '【 禮拜日 一隊 】',
+            'sun2': '【 禮拜日 二隊 】'
         };
 
         ['sat1', 'sat2', 'sun1', 'sun2'].forEach(id => {
             res += `\n${chineseTitles[id]}\n`;
             const container = document.getElementById(id);
             const cards = container.querySelectorAll('.card');
-            
             if (cards.length === 0) {
-                res += "(無成員)\n";
+                res += " (尚無成員)\n";
             } else {
                 cards.forEach(c => {
                     const name = c.querySelector('.name').innerText;
@@ -293,7 +326,7 @@
         out.value = res; 
         out.style.display = 'block';
         out.select();
-        alert("配置結果已生成！");
+        alert("配置清單已生成，請複製下方文字框內容。");
     };
 </script>
 
