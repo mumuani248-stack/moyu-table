@@ -48,7 +48,7 @@
 <body>
 
 <div class="container">
-    <h1>🌸 墨雨笙花百業配置表</h1>
+    <h1>🌸 墨雨笙花百業戰配置表</h1>
     
     <div class="input-section">
         <input type="text" id="pName" placeholder="遊戲名稱">
@@ -140,6 +140,7 @@
         }
     };
 
+    // --- 修改處：移除清空輸入框的代碼 ---
     document.getElementById('addBtn').onclick = () => {
         const name = document.getElementById('pName').value;
         const power = document.getElementById('pPower').value;
@@ -157,12 +158,11 @@
             team: 'pool'
         });
 
-        document.getElementById('pName').value = '';
-        document.getElementById('pPower').value = '';
-        document.getElementById('pStyle').value = '';
+        // 這裡原本有三行 document.getElementById(...).value = ''; 
+        // 我已經把這三行刪掉了，所以輸入框的內容會被保留。
     };
 
-    // 監聽資料 (除錯修復版)
+    // 監聽資料
     onValue(playersRef, (snapshot) => {
         const containers = {
             pool: document.getElementById('pool'),
@@ -177,14 +177,11 @@
             const data = snapshot.val();
             for (let key in data) {
                 const p = data[key];
-
-                // --- 關鍵修復：如果這筆資料沒有 team，視為壞檔，不計算也不顯示 ---
                 if (!p.team || !containers[p.team]) {
                     console.warn("發現異常資料 (已自動隱藏):", p);
                     continue; 
                 }
-
-                count++; // 確認資料正常且有地方放，才 +1
+                count++; 
 
                 const card = document.createElement('div');
                 card.className = "card";
@@ -271,7 +268,6 @@
         }
     };
 
-    // --- 新增：強制清空資料庫功能 ---
     document.getElementById('nukeBtn').onclick = () => {
         if(!checkAdmin()) return;
         if(confirm("⚠️ 警告：這將會刪除資料庫裡「所有」成員資料，且無法復原！\n\n如果只是顯示錯誤，這招可以修好。確定要執行嗎？")) {
