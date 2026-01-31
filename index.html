@@ -5,14 +5,12 @@
     <title>墨雨笙花百業戰配置表</title>
     <style>
         body { font-family: sans-serif; background: #f4f4f9; padding: 20px; }
-        /* 1. 加大容器寬度，確保三欄能並排 */
         .container { max-width: 1000px; margin: auto; }
         .input-section { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
         input { padding: 8px; margin-right: 10px; border: 1px solid #ddd; border-radius: 4px; }
         button { padding: 8px 15px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
         button:hover { background: #0056b3; }
         
-        /* 2. 控制看板佈局 */
         .board { display: flex; gap: 15px; justify-content: flex-start; align-items: flex-start; }
         .column { background: #e2e2e2; border-radius: 8px; width: 310px; min-height: 500px; padding: 15px; display: flex; flex-direction: column; }
         .column h2 { text-align: center; font-size: 1.2rem; color: #333; margin-top: 0; }
@@ -97,6 +95,20 @@
     const db = getDatabase(app);
     const playersRef = ref(db, 'players');
 
+    // 權限檢查邏輯
+    let isAdmin = false;
+    const checkAdmin = () => {
+        if (isAdmin) return true;
+        const password = prompt("請輸入管理者密碼以執行此操作：");
+        if (password === "0404") {
+            isAdmin = true;
+            return true;
+        } else {
+            alert("密碼錯誤，拒絕操作。");
+            return false;
+        }
+    };
+
     document.getElementById('addBtn').onclick = () => {
         const name = document.getElementById('pName').value;
         const power = document.getElementById('pPower').value;
@@ -145,10 +157,13 @@
                     <p>戰力: ${p.power} | 流派: ${p.style}</p>
                 `;
                 
+                // 刪除按鈕增加密碼檢查
                 card.querySelector('.del-btn').onclick = (e) => {
                     e.stopPropagation();
-                    if(confirm(`確定要移除「${p.name}」嗎？`)) {
-                        remove(ref(db, `players/${key}`));
+                    if(checkAdmin()) {
+                        if(confirm(`確定要移除「${p.name}」嗎？`)) {
+                            remove(ref(db, `players/${key}`));
+                        }
                     }
                 };
                 
@@ -196,8 +211,11 @@
         alert("輸出完成，請在網頁底部複製結果！");
     };
 
+    // 重置分配也加上密碼檢查
     document.getElementById('resetBtn').onclick = async () => {
+        if (!checkAdmin()) return;
         if (!confirm("確定要將所有已分配名單（一隊、二隊）移回待分配嗎？")) return;
+        
         const snapshot = await get(playersRef);
         const data = snapshot.val();
         if (!data) return;
