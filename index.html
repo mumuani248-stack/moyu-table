@@ -6,56 +6,37 @@
     <style>
         body { font-family: sans-serif; background: #f4f4f9; padding: 10px; }
         .container { max-width: 1400px; margin: auto; }
-        
-        /* 佈局架構 */
         .main-layout { display: flex; gap: 15px; align-items: flex-start; }
-        
-        /* 左側：總名單池 */
         .pool-section { 
             width: 280px; background: #fff; padding: 15px; border-radius: 8px; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 10px; 
         }
-        
-        /* 右側：戰場看板 */
         .board { flex-grow: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-
         .input-group { margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
         input[type="text"], input[type="number"] { width: 90%; padding: 8px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 4px; }
-        
         .day-check { display: inline-flex; align-items: center; gap: 5px; margin-right: 10px; font-size: 0.85rem; }
-
         .column { background: #e2e2e2; border-radius: 8px; padding: 12px; min-height: 400px; display: flex; flex-direction: column; }
         .column.sat { background: #fff0f3; }
         .column.sun { background: #f0f4ff; }
         .column h2 { text-align: center; font-size: 1.1rem; margin-top: 0; color: #333; }
-        
         .stat-bar { background: rgba(255,255,255,0.6); text-align: center; font-size: 0.8rem; padding: 4px; border-radius: 4px; margin-bottom: 10px; }
-
         .item-list { flex-grow: 1; min-height: 350px; }
-
-        /* 卡片樣式 */
         .card { 
             background: white; border-radius: 5px; padding: 10px; margin-bottom: 8px; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 8px solid #007bff; position: relative;
         }
         .card p { margin: 3px 0; font-size: 0.85rem; }
         .card .name { font-weight: bold; font-size: 0.95rem; }
-        
-        /* 分配按鈕樣式 */
         .assign-btns { margin-top: 8px; display: flex; gap: 4px; flex-wrap: wrap; }
-        .assign-btns button { 
-            padding: 2px 6px; font-size: 11px; border: none; border-radius: 3px; cursor: pointer; color: white;
-        }
+        .assign-btns button { padding: 2px 6px; font-size: 11px; border: none; border-radius: 3px; cursor: pointer; color: white; }
         .btn-sat { background: #e91e63; }
         .btn-sun { background: #3f51b5; }
-
         .del-btn {
             position: absolute; top: 5px; right: 5px;
             background: #ff4d4d; color: white; border: none; border-radius: 50%;
             width: 18px; height: 18px; font-size: 10px; cursor: pointer;
         }
-
-        button#addBtn { width: 100%; background: #007bff; margin-top: 5px; }
+        button#addBtn { width: 100%; background: #007bff; margin-top: 5px; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; }
         .export-section { margin-top: 20px; text-align: center; }
         #output { width: 100%; height: 100px; display: none; margin-top: 10px; }
     </style>
@@ -110,8 +91,8 @@
     </div>
 
     <div class="export-section">
-        <button style="background: #28a745;" id="exportBtn">輸出結果</button>
-        <button style="background: #dc3545;" id="resetBtn">清空所有隊伍</button>
+        <button style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;" id="exportBtn">輸出結果</button>
+        <button style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;" id="resetBtn">清空所有隊伍</button>
         <textarea id="output"></textarea>
     </div>
 </div>
@@ -133,30 +114,39 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const membersRef = ref(db, 'members');    // 原始人才庫
-    const assignsRef = ref(db, 'assigns');    // 分配狀態
+    const membersRef = ref(db, 'members');
+    const assignsRef = ref(db, 'assigns');
+
+    // 密碼驗證邏輯
+    let isAdmin = false;
+    const checkAdmin = () => {
+        if (isAdmin) return true;
+        const password = prompt("請輸入管理者密碼以執行刪除：");
+        if (password === "0404") {
+            isAdmin = true;
+            return true;
+        }
+        alert("密碼錯誤！");
+        return false;
+    };
 
     const getStyleColor = (style) => {
         const colors = { '九九': '#00008B', '無名': '#87CEFA', '威威': '#FFA500', '霖霖': '#32CD32', '玉玉': '#006400', '雙刀': '#800080' };
         return colors[style] || '#007bff';
     };
 
-    // 新增到總名單
     document.getElementById('addBtn').onclick = () => {
         const name = document.getElementById('pName').value;
         const power = parseInt(document.getElementById('pPower').value);
         const style = document.getElementById('pStyle').value;
         const days = Array.from(document.querySelectorAll('input[name="pDay"]:checked')).map(n => n.value);
-
-        if (!name || isNaN(power) || days.length === 0) return alert("請填寫名稱、戰力並勾選六或日");
-
+        if (!name || isNaN(power) || days.length === 0) return alert("請填寫完整資訊");
         push(membersRef, { name, power, style, days });
         document.getElementById('pName').value = '';
         document.getElementById('pPower').value = '';
         document.querySelectorAll('input[name="pDay"]').forEach(el => el.checked = false);
     };
 
-    // 渲染總名單 (左側)
     onValue(membersRef, (snapshot) => {
         const pool = document.getElementById('poolList');
         pool.innerHTML = '';
@@ -167,7 +157,6 @@
                 const card = document.createElement('div');
                 card.className = "card";
                 card.style.borderLeftColor = getStyleColor(m.style);
-                
                 let btns = '';
                 if(m.days.includes('六')) {
                     btns += `<button class="btn-sat" onclick="assign('${id}','sat1')">六1</button>`;
@@ -177,7 +166,6 @@
                     btns += `<button class="btn-sun" onclick="assign('${id}','sun1')">日1</button>`;
                     btns += `<button class="btn-sun" onclick="assign('${id}','sun2')">日2</button>`;
                 }
-
                 card.innerHTML = `
                     <button class="del-btn" onclick="deleteMember('${id}')">✕</button>
                     <p class="name">${m.name} <small>[${m.days.join('')}]</small></p>
@@ -189,23 +177,19 @@
         }
     });
 
-    // 渲染分配結果 (右側)
     onValue(assignsRef, (snapshot) => {
         const ids = ['sat1', 'sat2', 'sun1', 'sun2'];
         const stats = { sat1:0, sat2:0, sun1:0, sun2:0 };
         const counts = { sat1:0, sat2:0, sun1:0, sun2:0 };
         ids.forEach(id => document.getElementById(id).innerHTML = '');
-
         if (snapshot.exists()) {
             const data = snapshot.val();
             for (let aid in data) {
                 const a = data[aid];
                 const container = document.getElementById(a.target);
                 if (!container) continue;
-
                 stats[a.target] += a.power;
                 counts[a.target]++;
-
                 const card = document.createElement('div');
                 card.className = "card";
                 card.style.borderLeftColor = getStyleColor(a.style);
@@ -217,38 +201,40 @@
                 container.appendChild(card);
             }
         }
-        // 更新統計文字
         ids.forEach(id => {
             document.getElementById(`stat-${id}`).innerText = `戰力: ${stats[id].toLocaleString()} | ${counts[id]}人`;
         });
     });
 
-    // 全域函數供 HTML 調用
     window.assign = (mid, targetTeam) => {
         get(ref(db, `members/${mid}`)).then(snap => {
-            if(snap.exists()) {
-                push(assignsRef, { ...snap.val(), mid: mid, target: targetTeam });
-            }
+            if(snap.exists()) push(assignsRef, { ...snap.val(), mid: mid, target: targetTeam });
         });
     };
 
+    // 隊伍分身刪除不需要密碼 (方便頻繁微調)
     window.unassign = (aid) => remove(ref(db, `assigns/${aid}`));
 
+    // 總名單刪除需要密碼
     window.deleteMember = (mid) => {
-        if(confirm("確定徹底移除此成員及其所有分配紀錄嗎？")) {
-            remove(ref(db, `members/${mid}`));
-            // 同時清理該成員在隊伍中的分身
-            get(assignsRef).then(snap => {
-                if(snap.exists()){
-                    const data = snap.val();
-                    for(let aid in data) if(data[aid].mid === mid) remove(ref(db, `assigns/${aid}`));
-                }
-            });
+        if(checkAdmin()) {
+            if(confirm("確定徹底移除此成員及其所有分配紀錄嗎？")) {
+                remove(ref(db, `members/${mid}`));
+                get(assignsRef).then(snap => {
+                    if(snap.exists()){
+                        const data = snap.val();
+                        for(let aid in data) if(data[aid].mid === mid) remove(ref(db, `assigns/${aid}`));
+                    }
+                });
+            }
         }
     };
 
+    // 清空隊伍需要密碼
     document.getElementById('resetBtn').onclick = () => {
-        if(confirm("確定要清空「所有隊伍」的分配嗎？(不影響總名單)")) set(assignsRef, null);
+        if(checkAdmin()) {
+            if(confirm("確定要清空「所有隊伍」的分配嗎？(不影響總名單)")) set(assignsRef, null);
+        }
     };
 
     document.getElementById('exportBtn').onclick = () => {
