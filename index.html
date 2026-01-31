@@ -2,102 +2,109 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>墨雨笙花 - 週末分身配置版</title>
+    <title>墨雨笙花百業戰配置表</title>
     <style>
-        body { font-family: sans-serif; background: #f4f7f6; padding: 20px; margin: 0; }
-        .container { max-width: 1600px; margin: auto; }
+        body { font-family: sans-serif; background: #f4f4f9; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; }
+        .input-section { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input[type="text"], input[type="number"] { padding: 8px; margin-right: 10px; border: 1px solid #ddd; border-radius: 4px; }
         
-        /* 布局 */
-        .main-layout { display: flex; gap: 20px; align-items: flex-start; }
-        
-        /* 左側：待分配名單固定 */
-        .member-pool { 
-            width: 300px; background: #dee2e6; padding: 15px; border-radius: 12px; 
-            position: sticky; top: 20px; height: 85vh; display: flex; flex-direction: column;
-        }
-        
-        /* 右側：戰場四隊 */
-        .battle-board { flex-grow: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        
-        .column { background: #e9ecef; border-radius: 10px; padding: 12px; min-height: 400px; }
-        .sat { background: #fff0f3; border: 1px solid #ffccd5; }
-        .sun { background: #f0f4ff; border: 1px solid #d0d7ff; }
+        /* 星期選項樣式 */
+        .day-check { display: inline-flex; align-items: center; gap: 5px; margin-right: 15px; cursor: pointer; font-size: 0.9rem; }
+        .day-check input { cursor: pointer; }
 
-        .stat-bar { background: rgba(255,255,255,0.7); padding: 5px; text-align: center; font-size: 0.8rem; margin-bottom: 10px; font-weight: bold; border-radius: 5px; }
-
-        /* 卡片樣式 */
+        button { padding: 8px 15px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #0056b3; }
+        
+        .board { display: flex; gap: 15px; justify-content: flex-start; align-items: flex-start; }
+        .column { background: #e2e2e2; border-radius: 8px; width: 310px; min-height: 500px; padding: 15px; display: flex; flex-direction: column; }
+        .column h2 { text-align: center; font-size: 1.2rem; color: #333; margin-top: 0; }
+        .item-list { flex-grow: 1; min-height: 450px; border: 2px dashed transparent; }
+        .item-list.drag-over { background: #d0d0d0; border-color: #007bff; }
+        
         .card { 
-            background: white; border-radius: 6px; padding: 10px; margin-bottom: 8px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: relative; border-left: 6px solid #007bff;
+            background: white; border-radius: 5px; padding: 10px; margin-bottom: 10px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: grab; 
+            border-left: 8px solid #007bff;
+            position: relative;
         }
-        .pool-card { cursor: default; }
-        .pool-card:hover { background: #f8f9fa; }
+        .card:active { cursor: grabbing; }
+        .card p { margin: 5px 0; font-size: 0.9rem; }
+        .card .name { font-weight: bold; font-size: 1rem; padding-right: 20px; }
+        .card .days-tag { color: #d63384; font-size: 0.8rem; font-weight: bold; }
         
-        .add-to-team { 
-            margin-top: 5px; display: flex; gap: 4px; flex-wrap: wrap; 
+        .del-btn {
+            position: absolute; top: 5px; right: 5px;
+            background: #ff4d4d; color: white; border: none; border-radius: 50%;
+            width: 20px; height: 20px; font-size: 12px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            line-height: 1;
         }
-        .add-btn { 
-            font-size: 11px; padding: 2px 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 3px;
-        }
-        .add-btn.btn-sun { background: #6f42c1; }
+        .del-btn:hover { background: #cc0000; }
 
-        .del-btn { position: absolute; top: 5px; right: 5px; background: #ff4d4d; color: white; border: none; border-radius: 50%; width: 18px; height: 18px; cursor: pointer; font-size: 10px; }
-
-        .item-list { min-height: 350px; }
-        .name { font-weight: bold; font-size: 0.95rem; }
-        .info { font-size: 0.8rem; color: #666; }
-        .tag { font-size: 0.75rem; color: #d63384; font-weight: bold; }
+        .export-section { margin-top: 20px; text-align: center; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        #output { width: 100%; height: 100px; margin-top: 10px; display: none; }
+        
+        .danger-zone { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; text-align: right; }
+        .btn-nuke { background: #333; font-size: 0.8rem; opacity: 0.7; }
+        .btn-nuke:hover { background: #000; opacity: 1; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1 style="text-align: center;">🌸 墨雨笙花 - 週末分身配置表</h1>
-
-    <div class="main-layout">
-        <div class="member-pool">
-            <h3>所有成員名單</h3>
-            <div id="input-area" style="margin-bottom: 15px;">
-                <input type="text" id="pName" placeholder="名字" style="width:70px">
-                <input type="number" id="pPower" placeholder="戰力" style="width:70px">
-                <select id="pStyle"><option value="九九">九九</option><option value="無名">無名</option><option value="威威">威威</option><option value="霖霖">霖霖</option><option value="玉玉">玉玉</option><option value="雙刀">雙刀</option></select>
-                <div style="font-size: 12px; margin-top:5px;">
-                    <label><input type="checkbox" name="pDay" value="六">六</label>
-                    <label><input type="checkbox" name="pDay" value="日">日</label>
-                    <button id="addBtn" style="float:right">新增</button>
-                </div>
-            </div>
-            <div id="pool" style="overflow-y: auto; flex-grow: 1;"></div>
+    <h1>🌸 墨雨笙花百業戰配置表</h1>
+    
+    <div class="input-section">
+        <div style="margin-bottom: 10px;">
+            <input type="text" id="pName" placeholder="遊戲名稱">
+            <input type="number" id="pPower" placeholder="戰力數值">
+            <input type="text" id="pStyle" list="styleOptions" placeholder="選擇或輸入流派">
+            <datalist id="styleOptions">
+                <option value="威威"><option value="玉玉"><option value="霖霖">
+                <option value="無名"><option value="九九"><option value="雙刀">
+            </datalist>
         </div>
-
-        <div class="battle-board">
-            <div class="column sat">
-                <h2>六 - 一隊</h2>
-                <div class="stat-bar" id="stat-sat1">戰力: 0 | 0人</div>
-                <div class="item-list" id="sat1"></div>
-            </div>
-            <div class="column sat">
-                <h2>六 - 二隊</h2>
-                <div class="stat-bar" id="stat-sat2">戰力: 0 | 0人</div>
-                <div class="item-list" id="sat2"></div>
-            </div>
-            <div class="column sun">
-                <h2>日 - 一隊</h2>
-                <div class="stat-bar" id="stat-sun1">戰力: 0 | 0人</div>
-                <div class="item-list" id="sun1"></div>
-            </div>
-            <div class="column sun">
-                <h2>日 - 二隊</h2>
-                <div class="stat-bar" id="stat-sun2">戰力: 0 | 0人</div>
-                <div class="item-list" id="sun2"></div>
-            </div>
+        
+        <div style="margin-bottom: 10px;">
+            <label class="day-check"><input type="checkbox" name="pDay" value="六"> 星期六</label>
+            <label class="day-check"><input type="checkbox" name="pDay" value="日"> 星期日</label>
+            <button id="addBtn">加入名單</button>
+            <span id="countTip" style="margin-left: 10px;">目前人數: 0/30</span>
         </div>
+    </div>
+
+    <div class="board">
+        <div class="column" data-team="pool">
+            <h2>待分配名單</h2>
+            <div class="item-list" id="pool"></div>
+        </div>
+        
+        <div class="column" data-team="team1">
+            <h2>一隊</h2>
+            <div class="item-list" id="team1"></div>
+        </div>
+        
+        <div class="column" data-team="team2">
+            <h2>二隊</h2>
+            <div class="item-list" id="team2"></div>
+        </div>
+    </div>
+
+    <div class="export-section">
+        <button style="background: #28a745;" id="exportBtn">輸出分配結果</button>
+        <button style="background: #dc3545;" id="resetBtn">重置分配 (回待分配)</button>
+        <textarea id="output"></textarea>
+    </div>
+
+    <div class="danger-zone">
+        <button class="btn-nuke" id="nukeBtn">⚠️ 強制清空整個資料庫 (修復BUG用)</button>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue, update, remove, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, push, onValue, update, remove, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAV08lkRKtqclvDoju-cSmmN85fAM5fD-E",
@@ -112,112 +119,138 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const membersRef = ref(db, 'members');    // 存原始名單
-    const assignmentsRef = ref(db, 'assigns'); // 存分配結果
+    const playersRef = ref(db, 'players');
 
-    const getStyleColor = (s) => ({'九九':'#00008B','無名':'#87CEFA','威威':'#FFA500','霖霖':'#32CD32','玉玉':'#006400','雙刀':'#800080'}[s] || '#007bff');
+    const getStyleColor = (style) => {
+        const colors = { '九九': '#00008B', '無名': '#87CEFA', '威威': '#FFA500', '霖霖': '#32CD32', '玉玉': '#006400', '雙刀': '#800080' };
+        return colors[style] || '#007bff';
+    };
 
-    // 新增成員到總名單
+    let isAdmin = false;
+    const checkAdmin = () => {
+        if (isAdmin) return true;
+        const password = prompt("請輸入管理者密碼以執行此操作：");
+        if (password === "0404") { isAdmin = true; return true; }
+        alert("密碼錯誤，拒絕操作。"); return false;
+    };
+
+    // 加入名單
     document.getElementById('addBtn').onclick = () => {
         const name = document.getElementById('pName').value;
-        const power = parseInt(document.getElementById('pPower').value);
+        const power = document.getElementById('pPower').value;
         const style = document.getElementById('pStyle').value;
-        const days = Array.from(document.querySelectorAll('input[name="pDay"]:checked')).map(n => n.value);
-        if (!name || isNaN(power) || days.length === 0) return alert("請填寫完整並勾選六或日");
-        push(membersRef, { name, power, style, days });
+        
+        // 獲取複選的星期
+        const dayNodes = document.querySelectorAll('input[name="pDay"]:checked');
+        const days = Array.from(dayNodes).map(node => node.value);
+
+        // --- 新增的判定邏輯 ---
+        if (!name || !power || !style) {
+            alert("請填寫所有基本欄位（名稱、戰力、流派）");
+            return;
+        }
+
+        if (days.length === 0) {
+            alert("⚠️ 請至少勾選一個出勤時間（星期六或星期日）！");
+            return;
+        }
+        // --------------------
+
+        push(playersRef, {
+            name: name,
+            power: power,
+            style: style,
+            days: days, 
+            team: 'pool'
+        });
+        
+        document.querySelectorAll('input[name="pDay"]').forEach(el => el.checked = false);
     };
 
-    // 監聽總名單
-    onValue(membersRef, (snapshot) => {
-        const pool = document.getElementById('pool');
-        pool.innerHTML = '';
+    onValue(playersRef, (snapshot) => {
+        const containers = { pool: document.getElementById('pool'), team1: document.getElementById('team1'), team2: document.getElementById('team2') };
+        Object.values(containers).forEach(c => c.innerHTML = '');
+        let count = 0;
+
         if (snapshot.exists()) {
             const data = snapshot.val();
-            for (let id in data) {
-                const m = data[id];
+            for (let key in data) {
+                const p = data[key];
+                if (!p.team || !containers[p.team]) continue;
+
+                count++; 
                 const card = document.createElement('div');
-                card.className = 'card pool-card';
-                card.style.borderLeftColor = getStyleColor(m.style);
+                card.className = "card";
+                card.draggable = true;
+                card.id = key;
+                card.style.borderLeftColor = getStyleColor(p.style);
                 
-                // 根據勾選顯示按鈕
-                let btns = '';
-                if (m.days.includes('六')) {
-                    btns += `<button class="add-btn" onclick="assign('${id}','sat1')">六1</button>`;
-                    btns += `<button class="add-btn" onclick="assign('${id}','sat2')">六2</button>`;
-                }
-                if (m.days.includes('日')) {
-                    btns += `<button class="add-btn btn-sun" onclick="assign('${id}','sun1')">日1</button>`;
-                    btns += `<button class="add-btn btn-sun" onclick="assign('${id}','sun2')">日2</button>`;
-                }
-
+                const dayText = p.days && p.days.length > 0 ? ` [${p.days.join(',')}]` : " [未填]";
+                
                 card.innerHTML = `
-                    <button class="del-btn" onclick="removeMember('${id}')">✕</button>
-                    <div class="name">${m.name} <span class="tag">[${m.days.join('')}]</span></div>
-                    <div class="info">${m.power} | ${m.style}</div>
-                    <div class="add-to-team">${btns}</div>
+                    <button class="del-btn" title="移除名單">✕</button>
+                    <p class="name">${p.name}<span class="days-tag">${dayText}</span></p>
+                    <p>戰力: ${p.power} | 流派: ${p.style}</p>
                 `;
-                pool.appendChild(card);
+                
+                card.querySelector('.del-btn').onclick = (e) => {
+                    e.stopPropagation();
+                    if(checkAdmin() && confirm(`確定要移除「${p.name}」嗎？`)) remove(ref(db, `players/${key}`));
+                };
+                
+                card.ondragstart = (e) => e.dataTransfer.setData("text", e.target.id);
+                containers[p.team].appendChild(card);
             }
         }
+        document.getElementById('countTip').innerText = `目前人數: ${count}/30`;
     });
 
-    // 監聽分配結果
-    onValue(assignmentsRef, (snapshot) => {
-        const teams = { sat1:[], sat2:[], sun1:[], sun2:[] };
-        const stats = { sat1:0, sat2:0, sun1:0, sun2:0 };
-        document.querySelectorAll('.item-list').forEach(l => l.innerHTML = '');
+    document.querySelectorAll('.column').forEach(col => {
+        const list = col.querySelector('.item-list');
+        list.ondragover = (e) => { e.preventDefault(); list.classList.add('drag-over'); };
+        list.ondragleave = () => list.classList.remove('drag-over');
+        list.ondrop = (e) => {
+            e.preventDefault();
+            list.classList.remove('drag-over');
+            const playerId = e.dataTransfer.getData("text");
+            update(ref(db, `players/${playerId}`), { team: col.getAttribute('data-team') });
+        };
+    });
 
-        if (snapshot.exists()) {
-            const data = snapshot.val();
-            for (let aid in data) {
-                const a = data[aid];
-                const teamList = document.getElementById(a.targetTeam);
-                if (!teamList) continue;
-
-                stats[a.targetTeam] += a.power;
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.style.borderLeftColor = getStyleColor(a.style);
-                card.innerHTML = `
-                    <button class="del-btn" onclick="unassign('${aid}')">✕</button>
-                    <div class="name">${a.name}</div>
-                    <div class="info">${a.power} | ${a.style}</div>
-                `;
-                teamList.appendChild(card);
+    document.getElementById('exportBtn').onclick = () => {
+        let result = "--- 墨雨笙花百業配置結果 ---\n\n";
+        const teams = { team1: '【一隊】', team2: '【二隊】', pool: '【待分配】' };
+        
+        for (let teamId in teams) {
+            result += teams[teamId] + "\n";
+            const cards = document.getElementById(teamId).getElementsByClassName('card');
+            if (cards.length === 0) result += "(無)\n";
+            for (let card of cards) {
+                const nameText = card.querySelector('.name').innerText;
+                const info = card.querySelectorAll('p')[1].innerText;
+                result += `- ${nameText} (${info})\n`;
             }
+            result += "\n";
         }
-        // 更新統計
-        for(let t in stats) {
-            document.getElementById(`stat-${t}`).innerText = `戰力: ${stats[t].toLocaleString()} | ${document.getElementById(t).children.length}人`;
-        }
-    });
-
-    // 分配邏輯：將成員分身加入隊伍
-    window.assign = (mid, teamId) => {
-        const memberRef = ref(db, `members/${mid}`);
-        onValue(memberRef, (snap) => {
-            const m = snap.val();
-            push(assignmentsRef, { ...m, memberId: mid, targetTeam: teamId });
-        }, { onlyOnce: true });
+        const outputArea = document.getElementById('output');
+        outputArea.value = result;
+        outputArea.style.display = 'block';
+        alert("輸出完成！");
     };
 
-    // 移除分配
-    window.unassign = (aid) => remove(ref(db, `assigns/${aid}`));
-    
-    // 徹底刪除成員
-    window.removeMember = (mid) => {
-        if(confirm("將從總名單刪除此人，隊伍中的紀錄也會一併清除嗎？")) {
-            remove(ref(db, `members/${mid}`));
-            // 清理該成員的所有分配
-            get(assignmentsRef).then(snap => {
-                if(snap.exists()) {
-                    const data = snap.val();
-                    for(let aid in data) {
-                        if(data[aid].memberId === mid) remove(ref(db, `assigns/${aid}`));
-                    }
-                }
-            });
+    document.getElementById('resetBtn').onclick = async () => {
+        if (!checkAdmin() || !confirm("確定要將所有已分配名單移回待分配嗎？")) return;
+        const snapshot = await get(playersRef);
+        if (!snapshot.exists()) return;
+        const updates = {};
+        for (let key in snapshot.val()) {
+            if (snapshot.val()[key].team !== 'pool') updates[`/players/${key}/team`] = 'pool';
         }
+        update(ref(db), updates);
+    };
+
+    document.getElementById('nukeBtn').onclick = () => {
+        if(checkAdmin() && confirm("⚠️ 警告：這將會徹底刪除所有成員資料！")) set(playersRef, null);
     };
 </script>
 
