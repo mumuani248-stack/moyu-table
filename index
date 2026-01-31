@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>墨雨笙花百業配置表</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f9; padding: 20px; }
+        .container { max-width: 900px; margin: auto; }
+        .input-section { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input { padding: 8px; margin-right: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        button { padding: 8px 15px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #0056b3; }
+        
+        .board { display: flex; gap: 20px; flex-wrap: wrap; }
+        .column { background: #e2e2e2; border-radius: 8px; width: 280px; min-height: 400px; padding: 15px; display: flex; flex-direction: column; }
+        .column h2 { text-align: center; font-size: 1.2rem; color: #333; }
+        .item-list { flex-grow: 1; min-height: 350px; border: 2px dashed transparent; }
+        .item-list.drag-over { background: #d0d0d0; border-color: #007bff; }
+        
+        .card { 
+            background: white; border-radius: 5px; padding: 10px; margin-bottom: 10px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: grab; border-left: 5px solid #007bff;
+            position: relative; /* 為了定位刪除按鈕 */
+        }
+        .card:active { cursor: grabbing; }
+        .card p { margin: 5px 0; font-size: 0.9rem; }
+        .card .name { font-weight: bold; font-size: 1rem; padding-right: 20px; }
+        
+        /* 刪除按鈕樣式 */
+        .del-btn {
+            position: absolute; top: 5px; right: 5px;
+            background: #ff4d4d; color: white; border: none; border-radius: 50%;
+            width: 20px; height: 20px; font-size: 12px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            line-height: 1;
+        }
+        .del-btn:hover { background: #cc0000; }
+
+        .export-section { margin-top: 20px; text-align: center; }
+        #output { width: 100%; height: 100px; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🌸 墨雨笙花百業配置表</h1>
+    
+    <div class="input-section">
+        <input type="text" id="pName" placeholder="遊戲名稱">
+        <input type="number" id="pPower" placeholder="戰力數值">
+        <input type="text" id="pStyle" placeholder="流派">
+        <button id="addBtn">加入名單</button>
+        <span id="countTip">目前人數: 0/20</span>
+    </div>
+
+    <div class="board">
+        <div class="column" data-team="pool">
+            <h2>待分配名單</h2>
+            <div class="item-list" id="pool"></div>
+        </div>
+        
+        <div class="column" data-team="team1">
+            <h2>一隊</h2>
+            <div class="item-list" id="team1"></div>
+        </div>
+        
+        <div class="column" data-team="team2">
+            <h2>二隊</h2>
+            <div class="item-list" id="team2"></div>
+        </div>
+    </div>
+
+    <div class="export-section">
+        <button style="background: #28a745;" id="exportBtn">輸出分配結果</button>
+        <textarea id="output"></textarea>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAV08lkRKtqclvDoju-cSmmN85fAM5fD-E",
+        authDomain: "project1-efdf0.firebaseapp.com",
+        projectId: "project1-efdf0",
+        storageBucket: "project1-efdf0.firebasestorage.app",
+        messagingSenderId: "667848051314",
+        appId: "1:667848051314:web:f8ed8e50a13ced394250eb",
+        measurementId: "G-5QPWW9CQ7H",
+        databaseURL: "https://project1-efdf0-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const playersRef = ref(db, 'players');
+
+    // 1. 新增球員到雲端
+    document.getElementById('addBtn').onclick = () => {
+        const name = document.getElementById('pName').value;
+        const power = document.getElementById('pPower').value;
+        const style = document.getElementById('pStyle').value;
+
+        if (!name || !power || !style) {
+            alert("請填寫所有欄位");
+            return;
+        }
+
+        push(playersRef, {
+            name: name,
+            power: power,
+            style: style,
+            team: 'pool'
+        });
+
+        document.getElementById('pName').value = '';
+        document.getElementById('pPower').value = '';
+        document.getElementById('pStyle').value = '';
+    };
+
+    // 2. 監聽雲端資料
+    onValue(playersRef, (snapshot) => {
+        const data = snapshot.val();
+        const containers = {
+            pool: document.getElementById('pool'),
+            team1: document.getElementById('team1'),
+            team2: document.getElementById('team2')
+        };
+        
+        Object.values(containers).forEach(c => c.innerHTML = '');
+        
+        let count = 0;
+        for (let key in data) {
+            count++;
+            const p = data[key];
+            const card = document.createElement('div');
+            card.className = "card";
+            card.draggable = true;
+            card.id = key;
+            
+            // 建立卡片內容與移除按鈕
+            card.innerHTML = `
+                <button class="del-btn" title="移除名單">✕</button>
+                <p class="name">${p.name}</p>
+                <p>戰力: ${p.power} | 流派: ${p.style}</p>
+            `;
+            
+            // 綁定刪除事件
+            card.querySelector('.del-btn').onclick = (e) => {
+                e.stopPropagation(); // 防止觸發拖曳
+                if(confirm(`確定要移除「${p.name}」嗎？`)) {
+                    remove(ref(db, `players/${key}`));
+                }
+            };
+            
+            card.ondragstart = (e) => e.dataTransfer.setData("text", e.target.id);
+            
+            if (containers[p.team]) {
+                containers[p.team].appendChild(card);
+            }
+        }
+        document.getElementById('countTip').innerText = `目前人數: ${count}/20`;
+    });
+
+    // 3. 拖曳放置邏輯
+    document.querySelectorAll('.column').forEach(col => {
+        const list = col.querySelector('.item-list');
+        list.ondragover = (e) => { e.preventDefault(); list.classList.add('drag-over'); };
+        list.ondragleave = () => list.classList.remove('drag-over');
+        list.ondrop = (e) => {
+            e.preventDefault();
+            list.classList.remove('drag-over');
+            const playerId = e.dataTransfer.getData("text");
+            const targetTeam = col.getAttribute('data-team');
+            update(ref(db, `players/${playerId}`), { team: targetTeam });
+        };
+    });
+
+    // 4. 輸出功能
+    document.getElementById('exportBtn').onclick = () => {
+        let result = "--- 墨雨笙花百業配置結果 ---\n\n";
+        const teams = { team1: '【一隊】', team2: '【二隊】', pool: '【待分配】' };
+        
+        for (let teamId in teams) {
+            result += teams[teamId] + "\n";
+            const cards = document.getElementById(teamId).getElementsByClassName('card');
+            if (cards.length === 0) result += "(無)\n";
+            for (let card of cards) {
+                const name = card.querySelector('.name').innerText;
+                const info = card.querySelectorAll('p')[1].innerText;
+                result += `- ${name} (${info})\n`;
+            }
+            result += "\n";
+        }
+        const outputArea = document.getElementById('output');
+        outputArea.value = result;
+        outputArea.style.display = 'block';
+        alert("輸出完成，請在網頁底部複製結果！");
+    };
+</script>
+
+</body>
+</html>
