@@ -2,33 +2,52 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>墨雨笙花百業戰配置表 - 華麗動態版</title>
+    <title>墨雨笙花百業戰配置表 - 深色流光版</title>
     <style>
         :root {
-            --sat-color: #ffafbd;
-            --sun-color: #a1c4fd;
+            --sat-color: #ff4d6d;
+            --sun-color: #4361ee;
             --glow-speed: 3s;
+            --bg-dark: #1a1a1e; /* 深色背景 */
+            --card-dark: rgba(45, 45, 50, 0.9); /* 卡片深色半透明 */
         }
 
-        body { font-family: "Microsoft JhengHei", sans-serif; background: #f0f2f5; padding: 10px; color: #444; }
+        body { 
+            font-family: "Microsoft JhengHei", sans-serif; 
+            background: var(--bg-dark); 
+            padding: 10px; 
+            color: #e0e0e0; /* 亮色文字 */
+        }
+        
         .container { max-width: 1400px; margin: auto; }
         
-        h1 { text-align: center; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h1 { 
+            text-align: center; 
+            color: #fff; 
+            text-shadow: 0 0 10px rgba(255,255,255,0.2); 
+            margin-bottom: 25px; 
+            letter-spacing: 2px;
+        }
 
         .main-layout { display: flex; gap: 20px; align-items: flex-start; }
         
         /* 左側名單池 */
         .pool-section { 
-            width: 180px; background: rgba(255,255,255,0.9); padding: 15px; border-radius: 12px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: sticky; top: 10px; 
-            border: 1px solid #ddd;
+            width: 190px; 
+            background: var(--card-dark); 
+            padding: 15px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4); 
+            position: sticky; 
+            top: 10px; 
+            border: 1px solid #444;
         }
         
         .board { flex-grow: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
 
         /* 勾選框對齊修正 */
         .day-check-group {
-            margin: 10px 0;
+            margin: 12px 0;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -37,17 +56,18 @@
         .day-check {
             display: flex;
             align-items: center;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             cursor: pointer;
+            color: #ccc;
         }
-        .day-check input { width: auto !important; margin: 0 5px 0 0 !important; }
+        .day-check input { width: auto !important; margin: 0 6px 0 0 !important; cursor: pointer; }
 
         /* 動態流光邊框容器 */
         .column { 
             position: relative;
-            background: #fff; border-radius: 15px; padding: 15px; min-height: 450px; 
+            background: #252529; border-radius: 15px; padding: 18px; min-height: 480px; 
             display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             z-index: 1;
         }
 
@@ -56,75 +76,91 @@
             background: conic-gradient(transparent, transparent, transparent, #007bff);
             animation: rotate var(--glow-speed) linear infinite; z-index: -2;
         }
-        .column.sat::before { background: conic-gradient(transparent, transparent, transparent, #e91e63); }
-        .column.sun::before { background: conic-gradient(transparent, transparent, transparent, #3f51b5); }
+        .column.sat::before { background: conic-gradient(transparent, transparent, transparent, var(--sat-color)); }
+        .column.sun::before { background: conic-gradient(transparent, transparent, transparent, var(--sun-color)); }
 
         .column::after {
-            content: ""; position: absolute; inset: 4px; background: #fff; border-radius: 12px; z-index: -1;
+            content: ""; position: absolute; inset: 3px; background: #252529; border-radius: 12px; z-index: -1;
         }
 
         @keyframes rotate { 100% { transform: rotate(360deg); } }
 
-        .column h2 { text-align: center; font-size: 1.3rem; margin-bottom: 10px; font-weight: bold; }
-        .column.sat h2 { color: #e91e63; }
-        .column.sun h2 { color: #3f51b5; }
+        .column h2 { text-align: center; font-size: 1.4rem; margin-bottom: 12px; font-weight: bold; }
+        .column.sat h2 { color: #ff758c; text-shadow: 0 0 8px rgba(255,117,140,0.3); }
+        .column.sun h2 { color: #748ffc; text-shadow: 0 0 8px rgba(116,143,252,0.3); }
 
-        .stat-bar { background: #f8f9fa; text-align: center; font-size: 1rem; padding: 8px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed #ccc; font-weight: bold; }
+        .stat-bar { 
+            background: rgba(255,255,255,0.05); 
+            text-align: center; 
+            font-size: 1.05rem; 
+            padding: 10px; 
+            border-radius: 8px; 
+            margin-bottom: 15px; 
+            border: 1px dashed #555; 
+            font-weight: bold;
+            color: #fff;
+        }
+        
         .item-list { flex-grow: 1; min-height: 350px; }
 
         /* 卡片通用樣式 */
         .card { 
-            background: white; border-radius: 8px; padding: 10px; margin-bottom: 10px; 
-            box-shadow: 0 3px 6px rgba(0,0,0,0.05); border-left: 6px solid #007bff; position: relative;
-            transition: transform 0.2s; border: 1px solid #eee;
+            background: #2d2d32; border-radius: 8px; padding: 12px; margin-bottom: 12px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-left: 6px solid #007bff; position: relative;
+            transition: all 0.2s ease; border: 1px solid #3d3d42;
         }
-        .card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .card p { margin: 3px 0; }
-        .card .name { font-weight: bold; color: #222; }
+        .card:hover { transform: translateY(-3px); background: #35353b; border-color: #555; }
+        .card .name { font-weight: bold; color: #fff; }
 
-        /* --- 隊伍內卡片特別強化 --- */
+        /* --- 隊伍內卡片深色優化 --- */
         .item-list .card {
-            padding: 12px;
-            border: 1px solid rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .item-list .card .name {
-            font-size: 1.1rem; /* 字體加大 */
-            display: block;
-            margin-bottom: 4px;
-        }
-        .item-list .card p {
-            font-size: 0.95rem; /* 資訊字體加大 */
-            font-weight: 500;
-        }
+        .item-list .card .name { font-size: 1.15rem; margin-bottom: 5px; }
+        .item-list .card p { font-size: 1rem; font-weight: 500; }
 
         /* 按鈕視覺 */
         button { transition: all 0.2s; cursor: pointer; border: none; }
-        .assign-btns { margin-top: 8px; display: flex; gap: 4px; flex-wrap: wrap; }
-        .assign-btns button { padding: 4px 6px; font-size: 11px; border-radius: 4px; color: white; flex: 1 1 45%; }
-        .btn-sat { background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); }
-        .btn-sun { background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); }
-        .btn-assigned { background: #d1d1d1 !important; cursor: not-allowed !important; }
+        .assign-btns { margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap; }
+        .assign-btns button { padding: 5px; font-size: 12px; border-radius: 4px; color: white; flex: 1 1 45%; font-weight: bold; }
+        
+        .btn-sat { background: linear-gradient(135deg, #ff4d6d 0%, #c9184a 100%); }
+        .btn-sun { background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%); }
+        .btn-assigned { background: #444 !important; color: #888 !important; cursor: not-allowed !important; box-shadow: none; }
 
         .del-btn {
             position: absolute; top: 8px; right: 8px;
-            background: #ff4d4d; color: white; border-radius: 50%;
-            width: 22px; height: 22px; font-size: 12px; display: flex; align-items: center; justify-content: center;
+            background: rgba(255, 77, 77, 0.8); color: white; border-radius: 50%;
+            width: 24px; height: 24px; font-size: 12px; display: flex; align-items: center; justify-content: center;
             z-index: 10;
         }
+        .del-btn:hover { background: #ff4d4d; transform: scale(1.1); }
         
-        #addBtn { width: 100%; background: #333; color: white; padding: 10px; border-radius: 6px; margin-top: 10px; font-weight: bold; font-size: 1rem; }
-        .input-group input { width: 90%; padding: 8px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.9rem; }
+        /* 輸入框美化 */
+        #addBtn { width: 100%; background: #4e4e54; color: white; padding: 12px; border-radius: 6px; margin-top: 10px; font-weight: bold; font-size: 1rem; }
+        #addBtn:hover { background: #666; }
+        
+        .input-group input { 
+            width: 90%; padding: 10px; margin-bottom: 10px; 
+            border: 1px solid #444; border-radius: 6px; 
+            background: #121214; color: #fff; font-size: 0.95rem; 
+        }
+        .input-group input::placeholder { color: #666; }
 
-        .export-section { margin-top: 30px; text-align: center; padding-bottom: 50px; }
-        #output { width: 80%; height: 150px; display: none; margin: 15px auto; border-radius: 8px; border: 2px solid #ddd; }
+        .export-section { margin-top: 40px; text-align: center; padding-bottom: 60px; }
+        #output { 
+            width: 80%; height: 180px; display: none; margin: 20px auto; 
+            border-radius: 8px; border: 1px solid #444; 
+            background: #121214; color: #00ff00; font-family: monospace; padding: 15px;
+        }
 
-        .column.highlight::after { background: #f0fff4; }
+        .column.highlight::after { background: rgba(0, 255, 100, 0.05); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🌸 墨雨笙花 · 百業配置表</h1>
+    <h1>🌸 墨雨笙花 · 百業戰配置 (Dark)</h1>
     
     <div class="main-layout">
         <div class="pool-section">
@@ -142,8 +178,8 @@
                 </div>
                 <button id="addBtn">✨ 加入名冊</button>
             </div>
-            <hr style="border: 0.5px solid #eee;">
-            <h4 style="text-align: center; font-size: 0.9rem;">待命成員</h4>
+            <hr style="border: 0.5px solid #333;">
+            <h4 style="text-align: center; font-size: 0.95rem; color: #aaa;">待命成員</h4>
             <div id="poolList"></div>
         </div>
 
@@ -172,8 +208,8 @@
     </div>
 
     <div class="export-section">
-        <button style="background: #28a745; color: white; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 1rem;" id="exportBtn">📋 輸出配置結果</button>
-        <button style="background: #6c757d; color: white; padding: 12px 25px; border-radius: 6px;" id="resetBtn">🗑️ 清空隊伍</button>
+        <button style="background: #2d6a4f; color: white; padding: 12px 30px; border-radius: 6px; font-weight: bold; font-size: 1.1rem; border: 1px solid #40916c;" id="exportBtn">📋 輸出配置結果</button>
+        <button style="background: #444; color: #ccc; padding: 12px 30px; border-radius: 6px; margin-left: 10px;" id="resetBtn">🗑️ 清空隊伍</button>
         <textarea id="output" readonly></textarea>
     </div>
 </div>
@@ -206,17 +242,17 @@
         return false;
     };
 
-    // 定義職業顏色
+    // 深色模式職業配色優化 (主色 / 背景色)
     const styleColors = { 
-        '九九': { main: '#00008B', light: '#e6f0ff' }, 
-        '無名': { main: '#0099ff', light: '#f0f9ff' }, 
-        '威威': { main: '#cc7a00', light: '#fff9e6' }, 
-        '霖霖': { main: '#008000', light: '#f0fff0' }, 
-        '玉玉': { main: '#004d00', light: '#e6ffe6' }, 
-        '雙刀': { main: '#800080', light: '#f9f0f9' } 
+        '九九': { main: '#4d94ff', light: 'rgba(0, 100, 255, 0.15)' }, 
+        '無名': { main: '#33ccff', light: 'rgba(0, 204, 255, 0.12)' }, 
+        '威威': { main: '#ffaa33', light: 'rgba(255, 170, 50, 0.12)' }, 
+        '霖霖': { main: '#44ff44', light: 'rgba(0, 255, 0, 0.08)' }, 
+        '玉玉': { main: '#00cc66', light: 'rgba(0, 204, 100, 0.1)' }, 
+        '雙刀': { main: '#cc66ff', light: 'rgba(204, 102, 255, 0.12)' } 
     };
 
-    const getColors = (style) => styleColors[style] || { main: '#007bff', light: '#ffffff' };
+    const getColors = (style) => styleColors[style] || { main: '#aaa', light: 'rgba(255,255,255,0.05)' };
 
     let globalAssigns = {};
 
@@ -226,9 +262,7 @@
         renderTeams(); 
     });
 
-    onValue(membersRef, (snapshot) => {
-        renderPool();
-    });
+    onValue(membersRef, (snapshot) => { renderPool(); });
 
     function renderPool() {
         get(membersRef).then(snap => {
@@ -261,7 +295,7 @@
                 card.innerHTML = `
                     <button class="del-btn" onclick="deleteMember('${id}')">✕</button>
                     <p class="name">${m.name}</p>
-                    <p style="font-size:0.75rem">戰: ${m.power.toLocaleString()} | ${m.style}</p>
+                    <p style="font-size:0.8rem; color: #aaa;">戰: ${m.power.toLocaleString()} | ${m.style}</p>
                     <div class="assign-btns">${btns}</div>
                 `;
                 pool.appendChild(card);
@@ -286,14 +320,13 @@
             card.className = "card";
             const colors = getColors(a.style);
             
-            // 套用職業色彩
             card.style.borderLeftColor = colors.main;
             card.style.backgroundColor = colors.light;
             
             card.innerHTML = `
                 <button class="del-btn" onclick="unassign('${aid}')">✕</button>
                 <p class="name">${a.name}</p>
-                <p style="color: ${colors.main}">戰力: ${a.power.toLocaleString()} | 流派: ${a.style}</p>
+                <p style="color: ${colors.main}; font-weight: bold;">戰力: ${a.power.toLocaleString()} | ${a.style}</p>
             `;
             container.appendChild(card);
         }
@@ -335,25 +368,24 @@
             for(let aid in globalAssigns) if(globalAssigns[aid].mid === mid) remove(ref(db, `assigns/${aid}`));
         }
     };
-    document.getElementById('resetBtn').onclick = () => { if(checkAdmin() && confirm("確定要清空所有已分配隊伍嗎？")) set(assignsRef, null); };
+    document.getElementById('resetBtn').onclick = () => { if(checkAdmin() && confirm("確定要清空所有隊伍嗎？")) set(assignsRef, null); };
 
     document.getElementById('exportBtn').onclick = () => {
         let res = "--- 🌸 墨雨笙花 百業戰配置結果 ---\n";
-        const chineseTitles = { 'sat1':'禮拜六 一隊', 'sat2':'禮拜六 二隊', 'sun1':'禮拜日 一隊', 'sun2':'禮拜日 二隊' };
+        const titles = { 'sat1':'禮拜六 一隊', 'sat2':'禮拜六 二隊', 'sun1':'禮拜日 一隊', 'sun2':'禮拜日 二隊' };
         ['sat1', 'sat2', 'sun1', 'sun2'].forEach(id => {
-            res += `\n【 ${chineseTitles[id]} 】\n`;
+            res += `\n【 ${titles[id]} 】\n`;
             const container = document.getElementById(id);
             const cards = container.querySelectorAll('.card');
             if (cards.length === 0) res += " (尚無成員)\n";
             else cards.forEach(c => {
                 const name = c.querySelector('.name').innerText;
-                const info = c.querySelectorAll('p')[0].innerText;
+                const info = c.querySelectorAll('p')[1].innerText;
                 res += `- ${name} (${info})\n`;
             });
         });
         const out = document.getElementById('output');
         out.value = res; out.style.display = 'block'; out.select();
-        alert("配置清單已生成！");
     };
 </script>
 
