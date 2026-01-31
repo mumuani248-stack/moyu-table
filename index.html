@@ -305,14 +305,35 @@
     document.getElementById('resetBtn').onclick = () => { if(checkAdmin() && confirm("清空？")) set(assignsRef, null); };
 
     document.getElementById('exportBtn').onclick = () => {
-        let res = "--- 🌸 墨雨笙花 配置 ---\n";
+       let res = "--- 🌸 墨雨笙花 百業戰配置結果 ---\n";
+        // 定義代號與中文名稱的對照表
+        const titles = { 
+            'sat1': '禮拜六 一隊', 
+            'sat2': '禮拜六 二隊', 
+            'sun1': '禮拜日 一隊', 
+            'sun2': '禮拜日 二隊' 
+        };
+
         ['sat1', 'sat2', 'sun1', 'sun2'].forEach(id => {
-            res += `\n【 ${id} 】\n`;
-            document.getElementById(id).querySelectorAll('.card').forEach(c => {
-                res += `- ${c.querySelector('.name').innerText} (${c.querySelector('.info-text').innerText})\n`;
-            });
+            res += `\n【 ${titles[id]} 】\n`; // 這裡會自動帶入中文標題
+            const container = document.getElementById(id);
+            const cards = container.querySelectorAll('.card');
+            
+            if (cards.length === 0) {
+                res += " (尚無成員)\n";
+            } else {
+                cards.forEach(c => {
+                    const name = c.querySelector('.name').innerText;
+                    const info = c.querySelector('.info-text').innerText;
+                    res += `- ${name} (${info})\n`;
+                });
+            }
         });
-        const out = document.getElementById('output'); out.value = res; out.style.display = 'block'; out.select();
+
+        const out = document.getElementById('output');
+        out.value = res; 
+        out.style.display = 'block'; 
+        out.select();
     };
 </script>
 
