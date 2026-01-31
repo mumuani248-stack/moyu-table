@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>墨雨笙花百業戰配置表 - 精簡版</title>
+    <title>墨雨笙花百業戰配置表 - 終極精簡版</title>
     <style>
         :root {
             --sat-color: #ff4d6d;
@@ -25,7 +25,6 @@
 
         .main-layout { display: flex; gap: 15px; align-items: flex-start; }
         
-        /* 左側名單池 */
         .pool-section { 
             width: 200px; 
             background: var(--card-dark); 
@@ -41,7 +40,6 @@
         .day-check-group { margin: 10px 0; display: flex; justify-content: center; gap: 10px; }
         .day-check { display: flex; align-items: center; font-size: 0.85rem; color: #ccc; cursor: pointer; }
 
-        /* 流光容器縮小內距 */
         .column { 
             position: relative; background: #252529; border-radius: 12px; padding: 12px; min-height: 400px; 
             display: flex; flex-direction: column; overflow: hidden; z-index: 1;
@@ -65,25 +63,21 @@
         
         .item-list { flex-grow: 1; }
 
-        /* --- 核心改動：單行化卡片 --- */
         .card { 
             background: #2d2d32; border-radius: 4px; padding: 6px 10px; margin-bottom: 6px; 
             border-left: 4px solid #007bff; position: relative; border: 1px solid #3d3d42;
-            display: flex; align-items: center; gap: 8px; /* 橫向排版 */
+            display: flex; align-items: center; gap: 8px;
         }
         .card:hover { background: #35353b; }
-        
-        /* 姓名、戰力、職業全都在一排 */
         .card p { margin: 0; white-space: nowrap; font-size: 0.9rem; }
         .card .name { font-weight: bold; min-width: 60px; overflow: hidden; text-overflow: ellipsis; }
         .card .info-text { color: #aaa; flex-grow: 1; }
 
-        /* 待命區特別縮小 */
         #poolList .card { flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px; }
         #poolList .info-text { font-size: 0.8rem; }
 
-        /* 按鈕精簡 */
-        button { cursor: pointer; border: none; }
+        button { cursor: pointer; border: none; transition: 0.2s; }
+        button:active { transform: scale(0.95); }
         .assign-btns { display: flex; gap: 3px; width: 100%; }
         .assign-btns button { padding: 3px 0; font-size: 11px; border-radius: 3px; color: white; flex: 1; font-weight: bold; }
         
@@ -97,7 +91,6 @@
             width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center;
         }
         
-        /* 輸入框精簡 */
         .input-group input { 
             width: 100%; padding: 8px; margin-bottom: 6px; box-sizing: border-box;
             border: 1px solid #444; border-radius: 4px; background: #121214; color: #fff; font-size: 0.85rem; 
@@ -105,6 +98,8 @@
         #addBtn { width: 100%; background: #4e4e54; color: white; padding: 10px; border-radius: 4px; font-weight: bold; }
 
         .export-section { margin-top: 20px; text-align: center; padding-bottom: 40px; }
+        .export-section button { padding: 10px 20px; border-radius: 4px; font-weight: bold; margin: 0 5px; }
+        
         #output { width: 80%; height: 120px; display: none; margin: 15px auto; background: #121214; color: #00ff00; padding: 10px; }
 
     </style>
@@ -128,7 +123,7 @@
                     <label class="day-check"><input type="checkbox" name="pDay" value="六"> 六</label>
                     <label class="day-check"><input type="checkbox" name="pDay" value="日"> 日</label>
                 </div>
-                <button id="addBtn">✨ 加入</button>
+                <button id="addBtn">✨ 加入成員</button>
             </div>
             <hr style="border: 0.5px solid #333; margin: 10px 0;">
             <div id="poolList"></div>
@@ -159,8 +154,9 @@
     </div>
 
     <div class="export-section">
-        <button style="background: #2d6a4f; color: white; padding: 10px 20px; border-radius: 4px;" id="exportBtn">📋 輸出配置</button>
-        <button style="background: #444; color: #ccc; padding: 10px 20px; border-radius: 4px; margin-left: 10px;" id="resetBtn">🗑️ 清空</button>
+        <button style="background: #2d6a4f; color: white;" id="exportBtn">📋 輸出配置</button>
+        <button style="background: #444; color: #ccc;" id="resetBtn">🗑️ 清空分配</button>
+        <button style="background: #780000; color: #fff;" id="clearAllBtn">🧨 全部清空名冊</button>
         <textarea id="output" readonly></textarea>
     </div>
 </div>
@@ -282,7 +278,7 @@
 
     window.assign = async (mid, targetTeam) => {
         const targetPrefix = targetTeam.substring(0, 3); 
-        if (Object.values(globalAssigns).some(a => a.mid === mid && a.target.startsWith(targetPrefix))) return alert("⚠️ 已分配");
+        if (Object.values(globalAssigns).some(a => a.mid === mid && a.target.startsWith(targetPrefix))) return alert("⚠️ 本日已分配");
         const mSnap = await get(ref(db, `members/${mid}`));
         if(mSnap.exists()) push(assignsRef, { ...mSnap.val(), mid: mid, target: targetTeam });
     };
@@ -290,50 +286,48 @@
     document.getElementById('addBtn').onclick = () => {
         const name = document.getElementById('pName').value, power = parseInt(document.getElementById('pPower').value), style = document.getElementById('pStyle').value;
         const days = Array.from(document.querySelectorAll('input[name="pDay"]:checked')).map(n => n.value);
-        if (!name || isNaN(power) || days.length === 0) return alert("不完整");
+        if (!name || isNaN(power) || days.length === 0) return alert("資訊不完整");
         push(membersRef, { name, power, style, days });
         document.getElementById('pName').value = ''; document.getElementById('pPower').value = '';
     };
 
     window.unassign = (aid) => remove(ref(db, `assigns/${aid}`));
+    
     window.deleteMember = (mid) => {
-        if(checkAdmin() && confirm("刪除？")) {
+        if(checkAdmin() && confirm("確定從名冊中刪除此成員？")) {
             remove(ref(db, `members/${mid}`));
             for(let aid in globalAssigns) if(globalAssigns[aid].mid === mid) remove(ref(db, `assigns/${aid}`));
         }
     };
-    document.getElementById('resetBtn').onclick = () => { if(checkAdmin() && confirm("清空？")) set(assignsRef, null); };
+
+    document.getElementById('resetBtn').onclick = () => { 
+        if(checkAdmin() && confirm("確定要清空『所有隊伍分配』嗎？（名冊不會動）")) set(assignsRef, null); 
+    };
+
+    // 🧨 一鍵刪除所有成員
+    document.getElementById('clearAllBtn').onclick = () => {
+        if(checkAdmin()) {
+            if(confirm("⚠️ 注意！這會刪除『整個名冊』和『所有隊伍』！\n確定要執行毀滅性清空嗎？")) {
+                set(membersRef, null);
+                set(assignsRef, null);
+                alert("已全部清空！");
+            }
+        }
+    };
 
     document.getElementById('exportBtn').onclick = () => {
-       let res = "--- 🌸 墨雨笙花 百業戰配置結果 ---\n";
-        // 定義代號與中文名稱的對照表
-        const titles = { 
-            'sat1': '禮拜六 一隊', 
-            'sat2': '禮拜六 二隊', 
-            'sun1': '禮拜日 一隊', 
-            'sun2': '禮拜日 二隊' 
-        };
-
+        let res = "--- 🌸 墨雨笙花 百業戰配置結果 ---\n";
+        const titles = { 'sat1': '禮拜六 一隊', 'sat2': '禮拜六 二隊', 'sun1': '禮拜日 一隊', 'sun2': '禮拜日 二隊' };
         ['sat1', 'sat2', 'sun1', 'sun2'].forEach(id => {
-            res += `\n【 ${titles[id]} 】\n`; // 這裡會自動帶入中文標題
-            const container = document.getElementById(id);
-            const cards = container.querySelectorAll('.card');
-            
-            if (cards.length === 0) {
-                res += " (尚無成員)\n";
-            } else {
-                cards.forEach(c => {
-                    const name = c.querySelector('.name').innerText;
-                    const info = c.querySelector('.info-text').innerText;
-                    res += `- ${name} (${info})\n`;
-                });
-            }
+            res += `\n【 ${titles[id]} 】\n`;
+            const cards = document.getElementById(id).querySelectorAll('.card');
+            if (cards.length === 0) res += " (尚無成員)\n";
+            else cards.forEach(c => {
+                res += `- ${c.querySelector('.name').innerText} (${c.querySelector('.info-text').innerText})\n`;
+            });
         });
-
         const out = document.getElementById('output');
-        out.value = res; 
-        out.style.display = 'block'; 
-        out.select();
+        out.value = res; out.style.display = 'block'; out.select();
     };
 </script>
 
