@@ -153,21 +153,21 @@
         document.getElementById('pStyle').value = '';
     };
 
-    // 2. 監聽資料 (修正 BUG 處)
+    // 監聽資料 - 強化修正版
     onValue(playersRef, (snapshot) => {
-        const data = snapshot.val();
         const containers = {
             pool: document.getElementById('pool'),
             team1: document.getElementById('team1'),
             team2: document.getElementById('team2')
         };
         
-        // 先清空畫面
+        // 1. 無論如何先清空畫面與計數
         Object.values(containers).forEach(c => c.innerHTML = '');
-        
-        let count = 0; // 每次更新都重新計算
-        
-        if (data) {
+        let count = 0;
+
+        // 2. 檢查資料是否存在
+        if (snapshot.exists()) {
+            const data = snapshot.val();
             for (let key in data) {
                 count++;
                 const p = data[key];
@@ -199,8 +199,8 @@
                 }
             }
         }
-        
-        // 更新人數顯示：就算 data 是空的，這裡也會正確顯示 0
+
+        // 3. 強制更新顯示
         document.getElementById('countTip').innerText = `目前人數: ${count}/30`;
     });
 
@@ -242,8 +242,11 @@
         if (!checkAdmin()) return;
         if (!confirm("確定要將所有已分配名單（一隊、二隊）移回待分配嗎？")) return;
         const snapshot = await get(playersRef);
+        if (!snapshot.exists()) {
+            alert("目前沒有成員。");
+            return;
+        }
         const data = snapshot.val();
-        if (!data) return;
         const updates = {};
         for (let key in data) {
             if (data[key].team === 'team1' || data[key].team === 'team2') {
