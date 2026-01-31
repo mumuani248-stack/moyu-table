@@ -2,75 +2,50 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>墨雨笙花百業戰配置表 - 深色流光版</title>
+    <title>墨雨笙花百業戰配置表 - 精簡版</title>
     <style>
         :root {
             --sat-color: #ff4d6d;
             --sun-color: #4361ee;
             --glow-speed: 3s;
-            --bg-dark: #1a1a1e; /* 深色背景 */
-            --card-dark: rgba(45, 45, 50, 0.9); /* 卡片深色半透明 */
+            --bg-dark: #1a1a1e;
+            --card-dark: rgba(45, 45, 50, 0.9);
         }
 
         body { 
             font-family: "Microsoft JhengHei", sans-serif; 
             background: var(--bg-dark); 
             padding: 10px; 
-            color: #e0e0e0; /* 亮色文字 */
+            color: #e0e0e0; 
         }
         
         .container { max-width: 1400px; margin: auto; }
         
-        h1 { 
-            text-align: center; 
-            color: #fff; 
-            text-shadow: 0 0 10px rgba(255,255,255,0.2); 
-            margin-bottom: 25px; 
-            letter-spacing: 2px;
-        }
+        h1 { text-align: center; color: #fff; margin-bottom: 20px; letter-spacing: 2px; font-size: 1.8rem; }
 
-        .main-layout { display: flex; gap: 20px; align-items: flex-start; }
+        .main-layout { display: flex; gap: 15px; align-items: flex-start; }
         
         /* 左側名單池 */
         .pool-section { 
-            width: 190px; 
+            width: 200px; 
             background: var(--card-dark); 
-            padding: 15px; 
+            padding: 12px; 
             border-radius: 12px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4); 
             position: sticky; 
             top: 10px; 
             border: 1px solid #444;
         }
         
-        .board { flex-grow: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .board { flex-grow: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
 
-        /* 勾選框對齊修正 */
-        .day-check-group {
-            margin: 12px 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-        }
-        .day-check {
-            display: flex;
-            align-items: center;
-            font-size: 0.95rem;
-            cursor: pointer;
-            color: #ccc;
-        }
-        .day-check input { width: auto !important; margin: 0 6px 0 0 !important; cursor: pointer; }
+        .day-check-group { margin: 10px 0; display: flex; justify-content: center; gap: 10px; }
+        .day-check { display: flex; align-items: center; font-size: 0.85rem; color: #ccc; cursor: pointer; }
 
-        /* 動態流光邊框容器 */
+        /* 流光容器縮小內距 */
         .column { 
-            position: relative;
-            background: #252529; border-radius: 15px; padding: 18px; min-height: 480px; 
-            display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            z-index: 1;
+            position: relative; background: #252529; border-radius: 12px; padding: 12px; min-height: 400px; 
+            display: flex; flex-direction: column; overflow: hidden; z-index: 1;
         }
-
         .column::before {
             content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
             background: conic-gradient(transparent, transparent, transparent, #007bff);
@@ -78,96 +53,73 @@
         }
         .column.sat::before { background: conic-gradient(transparent, transparent, transparent, var(--sat-color)); }
         .column.sun::before { background: conic-gradient(transparent, transparent, transparent, var(--sun-color)); }
-
-        .column::after {
-            content: ""; position: absolute; inset: 3px; background: #252529; border-radius: 12px; z-index: -1;
-        }
+        .column::after { content: ""; position: absolute; inset: 2px; background: #252529; border-radius: 10px; z-index: -1; }
 
         @keyframes rotate { 100% { transform: rotate(360deg); } }
 
-        .column h2 { text-align: center; font-size: 1.4rem; margin-bottom: 12px; font-weight: bold; }
-        .column.sat h2 { color: #ff758c; text-shadow: 0 0 8px rgba(255,117,140,0.3); }
-        .column.sun h2 { color: #748ffc; text-shadow: 0 0 8px rgba(116,143,252,0.3); }
-
+        .column h2 { text-align: center; font-size: 1.1rem; margin-bottom: 8px; }
         .stat-bar { 
-            background: rgba(255,255,255,0.05); 
-            text-align: center; 
-            font-size: 1.05rem; 
-            padding: 10px; 
-            border-radius: 8px; 
-            margin-bottom: 15px; 
-            border: 1px dashed #555; 
-            font-weight: bold;
-            color: #fff;
+            background: rgba(255,255,255,0.05); text-align: center; font-size: 0.9rem; 
+            padding: 5px; border-radius: 5px; margin-bottom: 10px; border: 1px dashed #555; 
         }
         
-        .item-list { flex-grow: 1; min-height: 350px; }
+        .item-list { flex-grow: 1; }
 
-        /* 卡片通用樣式 */
+        /* --- 核心改動：單行化卡片 --- */
         .card { 
-            background: #2d2d32; border-radius: 8px; padding: 12px; margin-bottom: 12px; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-left: 6px solid #007bff; position: relative;
-            transition: all 0.2s ease; border: 1px solid #3d3d42;
+            background: #2d2d32; border-radius: 4px; padding: 6px 10px; margin-bottom: 6px; 
+            border-left: 4px solid #007bff; position: relative; border: 1px solid #3d3d42;
+            display: flex; align-items: center; gap: 8px; /* 橫向排版 */
         }
-        .card:hover { transform: translateY(-3px); background: #35353b; border-color: #555; }
-        .card .name { font-weight: bold; color: #fff; }
-
-        /* --- 隊伍內卡片深色優化 --- */
-        .item-list .card {
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .item-list .card .name { font-size: 1.15rem; margin-bottom: 5px; }
-        .item-list .card p { font-size: 1rem; font-weight: 500; }
-
-        /* 按鈕視覺 */
-        button { transition: all 0.2s; cursor: pointer; border: none; }
-        .assign-btns { margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap; }
-        .assign-btns button { padding: 5px; font-size: 12px; border-radius: 4px; color: white; flex: 1 1 45%; font-weight: bold; }
+        .card:hover { background: #35353b; }
         
-        .btn-sat { background: linear-gradient(135deg, #ff4d6d 0%, #c9184a 100%); }
-        .btn-sun { background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%); }
-        .btn-assigned { background: #444 !important; color: #888 !important; cursor: not-allowed !important; box-shadow: none; }
+        /* 姓名、戰力、職業全都在一排 */
+        .card p { margin: 0; white-space: nowrap; font-size: 0.9rem; }
+        .card .name { font-weight: bold; min-width: 60px; overflow: hidden; text-overflow: ellipsis; }
+        .card .info-text { color: #aaa; flex-grow: 1; }
+
+        /* 待命區特別縮小 */
+        #poolList .card { flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px; }
+        #poolList .info-text { font-size: 0.8rem; }
+
+        /* 按鈕精簡 */
+        button { cursor: pointer; border: none; }
+        .assign-btns { display: flex; gap: 3px; width: 100%; }
+        .assign-btns button { padding: 3px 0; font-size: 11px; border-radius: 3px; color: white; flex: 1; font-weight: bold; }
+        
+        .btn-sat { background: #ff4d6d; }
+        .btn-sun { background: #4361ee; }
+        .btn-assigned { background: #444 !important; color: #888 !important; }
 
         .del-btn {
-            position: absolute; top: 8px; right: 8px;
-            background: rgba(255, 77, 77, 0.8); color: white; border-radius: 50%;
-            width: 24px; height: 24px; font-size: 12px; display: flex; align-items: center; justify-content: center;
-            z-index: 10;
+            position: absolute; top: 50%; right: 8px; transform: translateY(-50%);
+            background: rgba(255, 77, 77, 0.6); color: white; border-radius: 50%;
+            width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center;
         }
-        .del-btn:hover { background: #ff4d4d; transform: scale(1.1); }
         
-        /* 輸入框美化 */
-        #addBtn { width: 100%; background: #4e4e54; color: white; padding: 12px; border-radius: 6px; margin-top: 10px; font-weight: bold; font-size: 1rem; }
-        #addBtn:hover { background: #666; }
-        
+        /* 輸入框精簡 */
         .input-group input { 
-            width: 90%; padding: 10px; margin-bottom: 10px; 
-            border: 1px solid #444; border-radius: 6px; 
-            background: #121214; color: #fff; font-size: 0.95rem; 
+            width: 100%; padding: 8px; margin-bottom: 6px; box-sizing: border-box;
+            border: 1px solid #444; border-radius: 4px; background: #121214; color: #fff; font-size: 0.85rem; 
         }
-        .input-group input::placeholder { color: #666; }
+        #addBtn { width: 100%; background: #4e4e54; color: white; padding: 10px; border-radius: 4px; font-weight: bold; }
 
-        .export-section { margin-top: 40px; text-align: center; padding-bottom: 60px; }
-        #output { 
-            width: 80%; height: 180px; display: none; margin: 20px auto; 
-            border-radius: 8px; border: 1px solid #444; 
-            background: #121214; color: #00ff00; font-family: monospace; padding: 15px;
-        }
+        .export-section { margin-top: 20px; text-align: center; padding-bottom: 40px; }
+        #output { width: 80%; height: 120px; display: none; margin: 15px auto; background: #121214; color: #00ff00; padding: 10px; }
 
-        .column.highlight::after { background: rgba(0, 255, 100, 0.05); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🌸 墨雨笙花 · 百業戰配置 </h1>
+    <h1>🌸 墨雨笙花 · 百業戰配置</h1>
     
     <div class="main-layout">
         <div class="pool-section">
             <div class="input-group">
-                <input type="text" id="pName" placeholder="成員名稱">
-                <input type="number" id="pPower" placeholder="戰力數值">
-                <input type="text" id="pStyle" list="styleOptions" placeholder="選擇流派">
+                <input type="text" id="pName" placeholder="名稱">
+                <input type="number" id="pPower" placeholder="戰力">
+                <input type="text" id="pStyle" list="styleOptions" placeholder="流派">
                 <datalist id="styleOptions">
                     <option value="威威"><option value="玉玉"><option value="霖霖">
                     <option value="無名"><option value="九九"><option value="雙刀">
@@ -176,47 +128,46 @@
                     <label class="day-check"><input type="checkbox" name="pDay" value="六"> 六</label>
                     <label class="day-check"><input type="checkbox" name="pDay" value="日"> 日</label>
                 </div>
-                <button id="addBtn">✨ 加入名冊</button>
+                <button id="addBtn">✨ 加入</button>
             </div>
-            <hr style="border: 0.5px solid #333;">
-            <h4 style="text-align: center; font-size: 0.95rem; color: #aaa;">待命成員</h4>
+            <hr style="border: 0.5px solid #333; margin: 10px 0;">
             <div id="poolList"></div>
         </div>
 
         <div class="board">
             <div class="column sat" id="col-sat1">
                 <h2>禮拜六 一隊</h2>
-                <div class="stat-bar" id="stat-sat1">總戰力: 0 | 0人</div>
+                <div class="stat-bar" id="stat-sat1">0 | 0人</div>
                 <div class="item-list" id="sat1"></div>
             </div>
             <div class="column sat" id="col-sat2">
                 <h2>禮拜六 二隊</h2>
-                <div class="stat-bar" id="stat-sat2">總戰力: 0 | 0人</div>
+                <div class="stat-bar" id="stat-sat2">0 | 0人</div>
                 <div class="item-list" id="sat2"></div>
             </div>
             <div class="column sun" id="col-sun1">
                 <h2>禮拜日 一隊</h2>
-                <div class="stat-bar" id="stat-sun1">總戰力: 0 | 0人</div>
+                <div class="stat-bar" id="stat-sun1">0 | 0人</div>
                 <div class="item-list" id="sun1"></div>
             </div>
             <div class="column sun" id="col-sun2">
                 <h2>禮拜日 二隊</h2>
-                <div class="stat-bar" id="stat-sun2">總戰力: 0 | 0人</div>
+                <div class="stat-bar" id="stat-sun2">0 | 0人</div>
                 <div class="item-list" id="sun2"></div>
             </div>
         </div>
     </div>
 
     <div class="export-section">
-        <button style="background: #2d6a4f; color: white; padding: 12px 30px; border-radius: 6px; font-weight: bold; font-size: 1.1rem; border: 1px solid #40916c;" id="exportBtn">📋 輸出配置結果</button>
-        <button style="background: #444; color: #ccc; padding: 12px 30px; border-radius: 6px; margin-left: 10px;" id="resetBtn">🗑️ 清空隊伍</button>
+        <button style="background: #2d6a4f; color: white; padding: 10px 20px; border-radius: 4px;" id="exportBtn">📋 輸出配置</button>
+        <button style="background: #444; color: #ccc; padding: 10px 20px; border-radius: 4px; margin-left: 10px;" id="resetBtn">🗑️ 清空</button>
         <textarea id="output" readonly></textarea>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue, update, remove, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, push, onValue, remove, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAV08lkRKtqclvDoju-cSmmN85fAM5fD-E",
@@ -242,14 +193,13 @@
         return false;
     };
 
-    // 深色模式職業配色優化 (主色 / 背景色)
     const styleColors = { 
-        '九九': { main: '#4d94ff', light: 'rgba(0, 100, 255, 0.15)' }, 
-        '無名': { main: '#33ccff', light: 'rgba(0, 204, 255, 0.12)' }, 
-        '威威': { main: '#ffaa33', light: 'rgba(255, 170, 50, 0.12)' }, 
-        '霖霖': { main: '#44ff44', light: 'rgba(0, 255, 0, 0.08)' }, 
-        '玉玉': { main: '#00cc66', light: 'rgba(0, 204, 100, 0.1)' }, 
-        '雙刀': { main: '#cc66ff', light: 'rgba(204, 102, 255, 0.12)' } 
+        '九九': { main: '#4d94ff', light: 'rgba(0, 100, 255, 0.1)' }, 
+        '無名': { main: '#33ccff', light: 'rgba(0, 204, 255, 0.08)' }, 
+        '威威': { main: '#ffaa33', light: 'rgba(255, 170, 50, 0.08)' }, 
+        '霖霖': { main: '#44ff44', light: 'rgba(0, 255, 0, 0.05)' }, 
+        '玉玉': { main: '#00cc66', light: 'rgba(0, 204, 100, 0.08)' }, 
+        '雙刀': { main: '#cc66ff', light: 'rgba(204, 102, 255, 0.08)' } 
     };
 
     const getColors = (style) => styleColors[style] || { main: '#aaa', light: 'rgba(255,255,255,0.05)' };
@@ -273,8 +223,8 @@
 
             for (let id in data) {
                 const m = data[id];
-                let isSatAssigned = Object.values(globalAssigns).some(a => a.mid === id && a.target.startsWith('sat'));
-                let isSunAssigned = Object.values(globalAssigns).some(a => a.mid === id && a.target.startsWith('sun'));
+                let isSat = Object.values(globalAssigns).some(a => a.mid === id && a.target.startsWith('sat'));
+                let isSun = Object.values(globalAssigns).some(a => a.mid === id && a.target.startsWith('sun'));
 
                 const card = document.createElement('div');
                 card.className = "card";
@@ -282,20 +232,18 @@
                 
                 let btns = '';
                 if(m.days.includes('六')) {
-                    const cls = isSatAssigned ? "btn-sat btn-assigned" : "btn-sat";
-                    btns += `<button class="${cls}" onclick="assign('${id}','sat1')">六1</button>`;
-                    btns += `<button class="${cls}" onclick="assign('${id}','sat2')">六2</button>`;
+                    btns += `<button class="btn-sat ${isSat?'btn-assigned':''}" onclick="assign('${id}','sat1')">六1</button>`;
+                    btns += `<button class="btn-sat ${isSat?'btn-assigned':''}" onclick="assign('${id}','sat2')">六2</button>`;
                 }
                 if(m.days.includes('日')) {
-                    const cls = isSunAssigned ? "btn-sun btn-assigned" : "btn-sun";
-                    btns += `<button class="${cls}" onclick="assign('${id}','sun1')">日1</button>`;
-                    btns += `<button class="${cls}" onclick="assign('${id}','sun2')">日2</button>`;
+                    btns += `<button class="btn-sun ${isSun?'btn-assigned':''}" onclick="assign('${id}','sun1')">日1</button>`;
+                    btns += `<button class="btn-sun ${isSun?'btn-assigned':''}" onclick="assign('${id}','sun2')">日2</button>`;
                 }
 
                 card.innerHTML = `
-                    <button class="del-btn" onclick="deleteMember('${id}')">✕</button>
+                    <button class="del-btn" style="top:5px; transform:none;" onclick="deleteMember('${id}')">✕</button>
                     <p class="name">${m.name}</p>
-                    <p style="font-size:0.8rem; color: #aaa;">戰: ${m.power.toLocaleString()} | ${m.style}</p>
+                    <p class="info-text">戰:${m.power.toLocaleString()} | ${m.style}</p>
                     <div class="assign-btns">${btns}</div>
                 `;
                 pool.appendChild(card);
@@ -305,87 +253,66 @@
 
     function renderTeams() {
         const ids = ['sat1', 'sat2', 'sun1', 'sun2'];
-        const stats = { sat1:0, sat2:0, sun1:0, sun2:0 };
-        const counts = { sat1:0, sat2:0, sun1:0, sun2:0 };
+        const stats = { sat1:0, sat2:0, sun1:0, sun2:0 }, counts = { sat1:0, sat2:0, sun1:0, sun2:0 };
         ids.forEach(id => document.getElementById(id).innerHTML = '');
 
         for (let aid in globalAssigns) {
             const a = globalAssigns[aid];
             const container = document.getElementById(a.target);
             if (!container) continue;
-            stats[a.target] += a.power;
-            counts[a.target]++;
+            stats[a.target] += a.power; counts[a.target]++;
             
             const card = document.createElement('div');
             card.className = "card";
             const colors = getColors(a.style);
-            
             card.style.borderLeftColor = colors.main;
             card.style.backgroundColor = colors.light;
             
             card.innerHTML = `
                 <button class="del-btn" onclick="unassign('${aid}')">✕</button>
                 <p class="name">${a.name}</p>
-                <p style="color: ${colors.main}; font-weight: bold;">戰力: ${a.power.toLocaleString()} | ${a.style}</p>
+                <p class="info-text" style="color:${colors.main}">戰力: ${a.power.toLocaleString()} | ${a.style}</p>
             `;
             container.appendChild(card);
         }
         ids.forEach(id => {
-            document.getElementById(`stat-${id}`).innerText = `總戰力: ${stats[id].toLocaleString()} | ${counts[id]} 人`;
+            document.getElementById(`stat-${id}`).innerText = `戰力: ${stats[id].toLocaleString()} | ${counts[id]} 人`;
         });
     }
 
     window.assign = async (mid, targetTeam) => {
         const targetPrefix = targetTeam.substring(0, 3); 
-        if (Object.values(globalAssigns).some(a => a.mid === mid && a.target.startsWith(targetPrefix))) {
-            alert("⚠️ 該成員本日已在隊伍中");
-            return;
-        }
+        if (Object.values(globalAssigns).some(a => a.mid === mid && a.target.startsWith(targetPrefix))) return alert("⚠️ 已分配");
         const mSnap = await get(ref(db, `members/${mid}`));
-        if(mSnap.exists()) {
-            const targetCol = document.getElementById('col-' + targetTeam);
-            targetCol.classList.add('highlight');
-            setTimeout(() => targetCol.classList.remove('highlight'), 600);
-            push(assignsRef, { ...mSnap.val(), mid: mid, target: targetTeam });
-        }
+        if(mSnap.exists()) push(assignsRef, { ...mSnap.val(), mid: mid, target: targetTeam });
     };
 
     document.getElementById('addBtn').onclick = () => {
-        const name = document.getElementById('pName').value;
-        const power = parseInt(document.getElementById('pPower').value);
-        const style = document.getElementById('pStyle').value;
+        const name = document.getElementById('pName').value, power = parseInt(document.getElementById('pPower').value), style = document.getElementById('pStyle').value;
         const days = Array.from(document.querySelectorAll('input[name="pDay"]:checked')).map(n => n.value);
-        if (!name || isNaN(power) || days.length === 0) return alert("資訊不完整");
+        if (!name || isNaN(power) || days.length === 0) return alert("不完整");
         push(membersRef, { name, power, style, days });
-        document.getElementById('pName').value = '';
-        document.getElementById('pPower').value = '';
+        document.getElementById('pName').value = ''; document.getElementById('pPower').value = '';
     };
 
     window.unassign = (aid) => remove(ref(db, `assigns/${aid}`));
     window.deleteMember = (mid) => {
-        if(checkAdmin() && confirm("確定刪除成員？")) {
+        if(checkAdmin() && confirm("刪除？")) {
             remove(ref(db, `members/${mid}`));
             for(let aid in globalAssigns) if(globalAssigns[aid].mid === mid) remove(ref(db, `assigns/${aid}`));
         }
     };
-    document.getElementById('resetBtn').onclick = () => { if(checkAdmin() && confirm("確定要清空所有隊伍嗎？")) set(assignsRef, null); };
+    document.getElementById('resetBtn').onclick = () => { if(checkAdmin() && confirm("清空？")) set(assignsRef, null); };
 
     document.getElementById('exportBtn').onclick = () => {
-        let res = "--- 🌸 墨雨笙花 百業戰配置結果 ---\n";
-        const titles = { 'sat1':'禮拜六 一隊', 'sat2':'禮拜六 二隊', 'sun1':'禮拜日 一隊', 'sun2':'禮拜日 二隊' };
+        let res = "--- 🌸 墨雨笙花 配置 ---\n";
         ['sat1', 'sat2', 'sun1', 'sun2'].forEach(id => {
-            res += `\n【 ${titles[id]} 】\n`;
-            const container = document.getElementById(id);
-            const cards = container.querySelectorAll('.card');
-            if (cards.length === 0) res += " (尚無成員)\n";
-            else cards.forEach(c => {
-                const name = c.querySelector('.name').innerText;
-                const info = c.querySelectorAll('p')[1].innerText;
-                res += `- ${name} (${info})\n`;
+            res += `\n【 ${id} 】\n`;
+            document.getElementById(id).querySelectorAll('.card').forEach(c => {
+                res += `- ${c.querySelector('.name').innerText} (${c.querySelector('.info-text').innerText})\n`;
             });
         });
-        const out = document.getElementById('output');
-        out.value = res; out.style.display = 'block'; out.select();
+        const out = document.getElementById('output'); out.value = res; out.style.display = 'block'; out.select();
     };
 </script>
 
