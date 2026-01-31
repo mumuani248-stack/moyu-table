@@ -50,7 +50,7 @@
         <input type="number" id="pPower" placeholder="戰力數值">
         <input type="text" id="pStyle" placeholder="流派">
         <button id="addBtn">加入名單</button>
-        <span id="countTip">目前人數: 0/20</span>
+        <span id="countTip">目前人數: 0/30</span>
     </div>
 
     <div class="board">
@@ -159,7 +159,7 @@
                 containers[p.team].appendChild(card);
             }
         }
-        document.getElementById('countTip').innerText = `目前人數: ${count}/20`;
+        document.getElementById('countTip').innerText = `目前人數: ${count}/30`;
     });
 
     // 3. 拖曳放置邏輯
