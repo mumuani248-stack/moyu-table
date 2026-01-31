@@ -7,7 +7,12 @@
         body { font-family: sans-serif; background: #f4f4f9; padding: 20px; }
         .container { max-width: 1000px; margin: auto; }
         .input-section { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        input { padding: 8px; margin-right: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        input[type="text"], input[type="number"] { padding: 8px; margin-right: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        
+        /* 星期選項樣式 */
+        .day-check { display: inline-flex; align-items: center; gap: 5px; margin-right: 15px; cursor: pointer; font-size: 0.9rem; }
+        .day-check input { cursor: pointer; }
+
         button { padding: 8px 15px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
         button:hover { background: #0056b3; }
         
@@ -26,6 +31,7 @@
         .card:active { cursor: grabbing; }
         .card p { margin: 5px 0; font-size: 0.9rem; }
         .card .name { font-weight: bold; font-size: 1rem; padding-right: 20px; }
+        .card .days-tag { color: #d63384; font-size: 0.8rem; font-weight: bold; }
         
         .del-btn {
             position: absolute; top: 5px; right: 5px;
@@ -39,7 +45,6 @@
         .export-section { margin-top: 20px; text-align: center; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
         #output { width: 100%; height: 100px; margin-top: 10px; display: none; }
         
-        /* 危險區域按鈕 */
         .danger-zone { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; text-align: right; }
         .btn-nuke { background: #333; font-size: 0.8rem; opacity: 0.7; }
         .btn-nuke:hover { background: #000; opacity: 1; }
@@ -51,21 +56,22 @@
     <h1>🌸 墨雨笙花百業戰配置表</h1>
     
     <div class="input-section">
-        <input type="text" id="pName" placeholder="遊戲名稱">
-        <input type="number" id="pPower" placeholder="戰力數值">
+        <div style="margin-bottom: 10px;">
+            <input type="text" id="pName" placeholder="遊戲名稱">
+            <input type="number" id="pPower" placeholder="戰力數值">
+            <input type="text" id="pStyle" list="styleOptions" placeholder="選擇或輸入流派">
+            <datalist id="styleOptions">
+                <option value="威威"><option value="玉玉"><option value="霖霖">
+                <option value="無名"><option value="九九"><option value="雙刀">
+            </datalist>
+        </div>
         
-        <input type="text" id="pStyle" list="styleOptions" placeholder="選擇或輸入流派">
-        <datalist id="styleOptions">
-            <option value="威威">
-            <option value="玉玉">
-            <option value="霖霖">
-            <option value="無名">
-            <option value="九九">
-            <option value="雙刀">
-        </datalist>
-
-        <button id="addBtn">加入名單</button>
-        <span id="countTip">目前人數: 0/30</span>
+        <div style="margin-bottom: 10px;">
+            <label class="day-check"><input type="checkbox" name="pDay" value="六"> 星期六</label>
+            <label class="day-check"><input type="checkbox" name="pDay" value="日"> 星期日</label>
+            <button id="addBtn">加入名單</button>
+            <span id="countTip" style="margin-left: 10px;">目前人數: 0/30</span>
+        </div>
     </div>
 
     <div class="board">
@@ -115,38 +121,28 @@
     const db = getDatabase(app);
     const playersRef = ref(db, 'players');
 
-    // 流派顏色對照
     const getStyleColor = (style) => {
-        const colors = {
-            '九九': '#00008B', // 深藍
-            '無名': '#87CEFA', // 淺藍
-            '威威': '#FFA500', // 橘色
-            '霖霖': '#32CD32', // 綠色
-            '玉玉': '#006400', // 深綠色
-            '雙刀': '#800080'  // 紫色
-        };
+        const colors = { '九九': '#00008B', '無名': '#87CEFA', '威威': '#FFA500', '霖霖': '#32CD32', '玉玉': '#006400', '雙刀': '#800080' };
         return colors[style] || '#007bff';
     };
 
-    // 管理員權限檢查
     let isAdmin = false;
     const checkAdmin = () => {
         if (isAdmin) return true;
         const password = prompt("請輸入管理者密碼以執行此操作：");
-        if (password === "0404") {
-            isAdmin = true;
-            return true;
-        } else {
-            alert("密碼錯誤，拒絕操作。");
-            return false;
-        }
+        if (password === "0404") { isAdmin = true; return true; }
+        alert("密碼錯誤，拒絕操作。"); return false;
     };
 
-    // 加入名單 (不重置輸入框)
+    // 加入名單
     document.getElementById('addBtn').onclick = () => {
         const name = document.getElementById('pName').value;
         const power = document.getElementById('pPower').value;
         const style = document.getElementById('pStyle').value;
+        
+        // 獲取複選的星期
+        const dayNodes = document.querySelectorAll('input[name="pDay"]:checked');
+        const days = Array.from(dayNodes).map(node => node.value);
 
         if (!name || !power || !style) {
             alert("請填寫所有欄位");
@@ -157,19 +153,17 @@
             name: name,
             power: power,
             style: style,
+            days: days, // 儲存陣列
             team: 'pool'
         });
-        // 已移除清空代碼，保留內容供快速連續輸入
+        
+        // 重置勾選框
+        document.querySelectorAll('input[name="pDay"]').forEach(el => el.checked = false);
     };
 
-    // 實時監聽資料庫
+    // 監聽資料
     onValue(playersRef, (snapshot) => {
-        const containers = {
-            pool: document.getElementById('pool'),
-            team1: document.getElementById('team1'),
-            team2: document.getElementById('team2')
-        };
-        
+        const containers = { pool: document.getElementById('pool'), team1: document.getElementById('team1'), team2: document.getElementById('team2') };
         Object.values(containers).forEach(c => c.innerHTML = '');
         let count = 0;
 
@@ -177,32 +171,26 @@
             const data = snapshot.val();
             for (let key in data) {
                 const p = data[key];
-                
-                // 排除損壞或不完整的資料
                 if (!p.team || !containers[p.team]) continue;
 
                 count++; 
-
                 const card = document.createElement('div');
                 card.className = "card";
                 card.draggable = true;
                 card.id = key;
                 card.style.borderLeftColor = getStyleColor(p.style);
                 
+                const dayText = p.days && p.days.length > 0 ? ` [${p.days.join(',')}]` : " [未填]";
+                
                 card.innerHTML = `
                     <button class="del-btn" title="移除名單">✕</button>
-                    <p class="name">${p.name}</p>
+                    <p class="name">${p.name}<span class="days-tag">${dayText}</span></p>
                     <p>戰力: ${p.power} | 流派: ${p.style}</p>
                 `;
                 
-                // 刪除功能，強制驗證權限
                 card.querySelector('.del-btn').onclick = (e) => {
                     e.stopPropagation();
-                    if(checkAdmin()) {
-                        if(confirm(`確定要移除「${p.name}」嗎？`)) {
-                            remove(ref(db, `players/${key}`));
-                        }
-                    }
+                    if(checkAdmin() && confirm(`確定要移除「${p.name}」嗎？`)) remove(ref(db, `players/${key}`));
                 };
                 
                 card.ondragstart = (e) => e.dataTransfer.setData("text", e.target.id);
@@ -212,7 +200,7 @@
         document.getElementById('countTip').innerText = `目前人數: ${count}/30`;
     });
 
-    // 拖放邏輯
+    // 拖放、輸出、重置邏輯 (保持不變但優化輸出文字)
     document.querySelectorAll('.column').forEach(col => {
         const list = col.querySelector('.item-list');
         list.ondragover = (e) => { e.preventDefault(); list.classList.add('drag-over'); };
@@ -221,12 +209,10 @@
             e.preventDefault();
             list.classList.remove('drag-over');
             const playerId = e.dataTransfer.getData("text");
-            const targetTeam = col.getAttribute('data-team');
-            update(ref(db, `players/${playerId}`), { team: targetTeam });
+            update(ref(db, `players/${playerId}`), { team: col.getAttribute('data-team') });
         };
     });
 
-    // 輸出結果
     document.getElementById('exportBtn').onclick = () => {
         let result = "--- 墨雨笙花百業配置結果 ---\n\n";
         const teams = { team1: '【一隊】', team2: '【二隊】', pool: '【待分配】' };
@@ -236,47 +222,31 @@
             const cards = document.getElementById(teamId).getElementsByClassName('card');
             if (cards.length === 0) result += "(無)\n";
             for (let card of cards) {
-                const name = card.querySelector('.name').innerText;
+                const nameText = card.querySelector('.name').innerText; // 這裡會包含名字跟星期標籤
                 const info = card.querySelectorAll('p')[1].innerText;
-                result += `- ${name} (${info})\n`;
+                result += `- ${nameText} (${info})\n`;
             }
             result += "\n";
         }
         const outputArea = document.getElementById('output');
         outputArea.value = result;
         outputArea.style.display = 'block';
-        alert("輸出完成，請在網頁底部複製結果！");
+        alert("輸出完成！");
     };
 
-    // 重置分配 (回待分配)
     document.getElementById('resetBtn').onclick = async () => {
-        if (!checkAdmin()) return;
-        if (!confirm("確定要將所有已分配名單（一隊、二隊）移回待分配嗎？")) return;
+        if (!checkAdmin() || !confirm("確定要將所有已分配名單移回待分配嗎？")) return;
         const snapshot = await get(playersRef);
         if (!snapshot.exists()) return;
-        
-        const data = snapshot.val();
         const updates = {};
-        for (let key in data) {
-            if (data[key].team === 'team1' || data[key].team === 'team2') {
-                updates[`/players/${key}/team`] = 'pool';
-            }
+        for (let key in snapshot.val()) {
+            if (snapshot.val()[key].team !== 'pool') updates[`/players/${key}/team`] = 'pool';
         }
-        if (Object.keys(updates).length > 0) {
-            update(ref(db), updates).then(() => alert("已重置所有分配狀態！"));
-        }
+        update(ref(db), updates);
     };
 
-    // 強制清空 (修復用)
     document.getElementById('nukeBtn').onclick = () => {
-        if(!checkAdmin()) return;
-        if(confirm("⚠️ 警告：這將會徹底刪除所有成員資料！確定要執行嗎？")) {
-            set(playersRef, null)
-                .then(() => {
-                    isAdmin = false; // 操作完重置權限
-                    alert("資料庫已清空，人數應已歸零。");
-                });
-        }
+        if(checkAdmin() && confirm("⚠️ 警告：這將會徹底刪除所有成員資料！")) set(playersRef, null);
     };
 </script>
 
