@@ -17,18 +17,16 @@
         .item-list { flex-grow: 1; min-height: 450px; border: 2px dashed transparent; }
         .item-list.drag-over { background: #d0d0d0; border-color: #007bff; }
         
-        /* 基礎卡片樣式 */
         .card { 
             background: white; border-radius: 5px; padding: 10px; margin-bottom: 10px; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: grab; 
-            border-left: 8px solid #007bff; /* 預設顏色 */
+            border-left: 8px solid #007bff;
             position: relative;
         }
         .card:active { cursor: grabbing; }
         .card p { margin: 5px 0; font-size: 0.9rem; }
         .card .name { font-weight: bold; font-size: 1rem; padding-right: 20px; }
         
-        /* 刪除按鈕樣式 */
         .del-btn {
             position: absolute; top: 5px; right: 5px;
             background: #ff4d4d; color: white; border: none; border-radius: 50%;
@@ -108,17 +106,16 @@
     const db = getDatabase(app);
     const playersRef = ref(db, 'players');
 
-    // 取得顏色函式
     const getStyleColor = (style) => {
         const colors = {
-            '九九': '#00008B', // 深藍
-            '無名': '#87CEFA', // 淺藍
-            '威威': '#FFA500', // 橘色
-            '霖霖': '#32CD32', // 綠色
-            '玉玉': '#006400', // 深綠色
-            '雙刀': '#800080'  // 紫色
+            '九九': '#00008B',
+            '無名': '#87CEFA',
+            '威威': '#FFA500',
+            '霖霖': '#32CD32',
+            '玉玉': '#006400',
+            '雙刀': '#800080'
         };
-        return colors[style] || '#007bff'; // 如果沒匹配到，回傳預設藍色
+        return colors[style] || '#007bff';
     };
 
     let isAdmin = false;
@@ -156,6 +153,7 @@
         document.getElementById('pStyle').value = '';
     };
 
+    // 2. 監聽資料 (修正 BUG 處)
     onValue(playersRef, (snapshot) => {
         const data = snapshot.val();
         const containers = {
@@ -164,9 +162,11 @@
             team2: document.getElementById('team2')
         };
         
+        // 先清空畫面
         Object.values(containers).forEach(c => c.innerHTML = '');
         
-        let count = 0;
+        let count = 0; // 每次更新都重新計算
+        
         if (data) {
             for (let key in data) {
                 count++;
@@ -175,8 +175,6 @@
                 card.className = "card";
                 card.draggable = true;
                 card.id = key;
-                
-                // 套用流派顏色到 border-left
                 card.style.borderLeftColor = getStyleColor(p.style);
                 
                 card.innerHTML = `
@@ -201,6 +199,8 @@
                 }
             }
         }
+        
+        // 更新人數顯示：就算 data 是空的，這裡也會正確顯示 0
         document.getElementById('countTip').innerText = `目前人數: ${count}/30`;
     });
 
