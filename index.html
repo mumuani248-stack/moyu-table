@@ -47,7 +47,17 @@
     <div class="input-section">
         <input type="text" id="pName" placeholder="遊戲名稱">
         <input type="number" id="pPower" placeholder="戰力數值">
-        <input type="text" id="pStyle" placeholder="流派">
+        
+        <input type="text" id="pStyle" list="styleOptions" placeholder="選擇或輸入流派">
+        <datalist id="styleOptions">
+            <option value="威威">
+            <option value="玉玉">
+            <option value="霖霖">
+            <option value="無名">
+            <option value="九九">
+            <option value="雙刀">
+        </datalist>
+
         <button id="addBtn">加入名單</button>
         <span id="countTip">目前人數: 0/30</span>
     </div>
@@ -95,7 +105,6 @@
     const db = getDatabase(app);
     const playersRef = ref(db, 'players');
 
-    // 權限檢查邏輯
     let isAdmin = false;
     const checkAdmin = () => {
         if (isAdmin) return true;
@@ -157,7 +166,6 @@
                     <p>戰力: ${p.power} | 流派: ${p.style}</p>
                 `;
                 
-                // 刪除按鈕增加密碼檢查
                 card.querySelector('.del-btn').onclick = (e) => {
                     e.stopPropagation();
                     if(checkAdmin()) {
@@ -211,7 +219,6 @@
         alert("輸出完成，請在網頁底部複製結果！");
     };
 
-    // 重置分配也加上密碼檢查
     document.getElementById('resetBtn').onclick = async () => {
         if (!checkAdmin()) return;
         if (!confirm("確定要將所有已分配名單（一隊、二隊）移回待分配嗎？")) return;
