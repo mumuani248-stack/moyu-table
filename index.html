@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>墨雨笙花百業戰配置表 - 精簡版</title>
+    <title>墨雨笙花百業戰配置表 - 繁中精簡版</title>
     <style>
         body { font-family: sans-serif; background: #f4f4f9; padding: 10px; }
         .container { max-width: 1400px; margin: auto; }
@@ -19,7 +19,7 @@
         input[type="text"], input[type="number"] { width: 85%; padding: 6px; margin-bottom: 5px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.8rem; }
         .day-check { display: inline-flex; align-items: center; gap: 3px; margin-right: 5px; font-size: 0.75rem; }
 
-        /* 隊伍欄位特效 */
+        /* 隊隊伍欄位特效 */
         .column { 
             background: #e2e2e2; border-radius: 8px; padding: 12px; min-height: 400px; 
             display: flex; flex-direction: column; transition: all 0.3s ease; 
@@ -32,7 +32,7 @@
         .stat-bar { background: rgba(255,255,255,0.6); text-align: center; font-size: 0.8rem; padding: 4px; border-radius: 4px; margin-bottom: 10px; }
         .item-list { flex-grow: 1; min-height: 350px; }
 
-        /* 卡片樣式：針對窄版名單優化 */
+        /* 卡片樣式 */
         .card { 
             background: white; border-radius: 5px; padding: 8px; margin-bottom: 8px; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #007bff; position: relative;
@@ -57,7 +57,7 @@
         
         button#addBtn { width: 100%; background: #007bff; margin-top: 5px; color: white; border: none; padding: 6px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
         .export-section { margin-top: 20px; text-align: center; }
-        #output { width: 100%; height: 100px; display: none; margin-top: 10px; }
+        #output { width: 100%; height: 120px; display: none; margin-top: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; background: #fff; }
     </style>
 </head>
 <body>
@@ -79,7 +79,7 @@
                     <label class="day-check"><input type="checkbox" name="pDay" value="六"> 六</label>
                     <label class="day-check"><input type="checkbox" name="pDay" value="日"> 日</label>
                 </div>
-                <button id="addBtn">新增</button>
+                <button id="addBtn">新增成員</button>
             </div>
             <h4>待分配名單</h4>
             <div id="poolList"></div>
@@ -87,22 +87,22 @@
 
         <div class="board">
             <div class="column sat" id="col-sat1">
-                <h2>六 - 一隊</h2>
+                <h2>禮拜六 - 一隊</h2>
                 <div class="stat-bar" id="stat-sat1">戰力: 0 | 0人</div>
                 <div class="item-list" id="sat1"></div>
             </div>
             <div class="column sat" id="col-sat2">
-                <h2>六 - 二隊</h2>
+                <h2>禮拜六 - 二隊</h2>
                 <div class="stat-bar" id="stat-sat2">戰力: 0 | 0人</div>
                 <div class="item-list" id="sat2"></div>
             </div>
             <div class="column sun" id="col-sun1">
-                <h2>日 - 一隊</h2>
+                <h2>禮拜日 - 一隊</h2>
                 <div class="stat-bar" id="stat-sun1">戰力: 0 | 0人</div>
                 <div class="item-list" id="sun1"></div>
             </div>
             <div class="column sun" id="col-sun2">
-                <h2>日 - 二隊</h2>
+                <h2>禮拜日 - 二隊</h2>
                 <div class="stat-bar" id="stat-sun2">戰力: 0 | 0人</div>
                 <div class="item-list" id="sun2"></div>
             </div>
@@ -263,16 +263,37 @@
     };
     document.getElementById('resetBtn').onclick = () => { if(checkAdmin() && confirm("清空隊伍？")) set(assignsRef, null); };
 
+    // --- 中文輸出邏輯 ---
     document.getElementById('exportBtn').onclick = () => {
-        let res = "--- 配置結果 ---\n";
-        ['sat1','sat2','sun1','sun2'].forEach(id => {
-            res += `\n${id.toUpperCase()}\n`;
-            document.getElementById(id).querySelectorAll('.card').forEach(c => {
-                res += `- ${c.querySelector('.name').innerText} ${c.querySelectorAll('p')[1].innerText}\n`;
-            });
+        let res = "--- 🌸 墨雨笙花百業配置結果 ---\n";
+        const chineseTitles = {
+            'sat1': '【禮拜六 一隊】',
+            'sat2': '【禮拜六 二隊】',
+            'sun1': '【禮拜日 一隊】',
+            'sun2': '【禮拜日 二隊】'
+        };
+
+        ['sat1', 'sat2', 'sun1', 'sun2'].forEach(id => {
+            res += `\n${chineseTitles[id]}\n`;
+            const container = document.getElementById(id);
+            const cards = container.querySelectorAll('.card');
+            
+            if (cards.length === 0) {
+                res += "(無成員)\n";
+            } else {
+                cards.forEach(c => {
+                    const name = c.querySelector('.name').innerText;
+                    const info = c.querySelectorAll('p')[1].innerText;
+                    res += `- ${name} (${info})\n`;
+                });
+            }
         });
+
         const out = document.getElementById('output');
-        out.value = res; out.style.display = 'block';
+        out.value = res; 
+        out.style.display = 'block';
+        out.select();
+        alert("配置結果已生成！已切換為中文標題。");
     };
 </script>
 
