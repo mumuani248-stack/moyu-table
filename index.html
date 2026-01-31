@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>墨雨笙花百業配置表</title>
+    <title>墨雨笙花百業戰配置表</title>
     <style>
         body { font-family: sans-serif; background: #f4f4f9; padding: 20px; }
         .container { max-width: 900px; margin: auto; }
@@ -20,13 +20,12 @@
         .card { 
             background: white; border-radius: 5px; padding: 10px; margin-bottom: 10px; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: grab; border-left: 5px solid #007bff;
-            position: relative; /* 為了定位刪除按鈕 */
+            position: relative;
         }
         .card:active { cursor: grabbing; }
         .card p { margin: 5px 0; font-size: 0.9rem; }
         .card .name { font-weight: bold; font-size: 1rem; padding-right: 20px; }
         
-        /* 刪除按鈕樣式 */
         .del-btn {
             position: absolute; top: 5px; right: 5px;
             background: #ff4d4d; color: white; border: none; border-radius: 50%;
@@ -36,7 +35,7 @@
         }
         .del-btn:hover { background: #cc0000; }
 
-        .export-section { margin-top: 20px; text-align: center; }
+        .export-section { margin-top: 20px; text-align: center; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
         #output { width: 100%; height: 100px; margin-top: 10px; display: none; }
     </style>
 </head>
@@ -72,13 +71,14 @@
 
     <div class="export-section">
         <button style="background: #28a745;" id="exportBtn">輸出分配結果</button>
+        <button style="background: #dc3545;" id="resetBtn">重置分配 (回待分配)</button>
         <textarea id="output"></textarea>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, push, onValue, update, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAV08lkRKtqclvDoju-cSmmN85fAM5fD-E",
@@ -95,7 +95,7 @@
     const db = getDatabase(app);
     const playersRef = ref(db, 'players');
 
-    // 1. 新增球員到雲端
+    // 1. 新增球員
     document.getElementById('addBtn').onclick = () => {
         const name = document.getElementById('pName').value;
         const power = document.getElementById('pPower').value;
@@ -118,7 +118,7 @@
         document.getElementById('pStyle').value = '';
     };
 
-    // 2. 監聽雲端資料
+    // 2. 監聽資料
     onValue(playersRef, (snapshot) => {
         const data = snapshot.val();
         const containers = {
@@ -130,39 +130,39 @@
         Object.values(containers).forEach(c => c.innerHTML = '');
         
         let count = 0;
-        for (let key in data) {
-            count++;
-            const p = data[key];
-            const card = document.createElement('div');
-            card.className = "card";
-            card.draggable = true;
-            card.id = key;
-            
-            // 建立卡片內容與移除按鈕
-            card.innerHTML = `
-                <button class="del-btn" title="移除名單">✕</button>
-                <p class="name">${p.name}</p>
-                <p>戰力: ${p.power} | 流派: ${p.style}</p>
-            `;
-            
-            // 綁定刪除事件
-            card.querySelector('.del-btn').onclick = (e) => {
-                e.stopPropagation(); // 防止觸發拖曳
-                if(confirm(`確定要移除「${p.name}」嗎？`)) {
-                    remove(ref(db, `players/${key}`));
+        if (data) {
+            for (let key in data) {
+                count++;
+                const p = data[key];
+                const card = document.createElement('div');
+                card.className = "card";
+                card.draggable = true;
+                card.id = key;
+                
+                card.innerHTML = `
+                    <button class="del-btn" title="移除名單">✕</button>
+                    <p class="name">${p.name}</p>
+                    <p>戰力: ${p.power} | 流派: ${p.style}</p>
+                `;
+                
+                card.querySelector('.del-btn').onclick = (e) => {
+                    e.stopPropagation();
+                    if(confirm(`確定要移除「${p.name}」嗎？`)) {
+                        remove(ref(db, `players/${key}`));
+                    }
+                };
+                
+                card.ondragstart = (e) => e.dataTransfer.setData("text", e.target.id);
+                
+                if (containers[p.team]) {
+                    containers[p.team].appendChild(card);
                 }
-            };
-            
-            card.ondragstart = (e) => e.dataTransfer.setData("text", e.target.id);
-            
-            if (containers[p.team]) {
-                containers[p.team].appendChild(card);
             }
         }
         document.getElementById('countTip').innerText = `目前人數: ${count}/30`;
     });
 
-    // 3. 拖曳放置邏輯
+    // 3. 拖曳
     document.querySelectorAll('.column').forEach(col => {
         const list = col.querySelector('.item-list');
         list.ondragover = (e) => { e.preventDefault(); list.classList.add('drag-over'); };
@@ -196,6 +196,31 @@
         outputArea.value = result;
         outputArea.style.display = 'block';
         alert("輸出完成，請在網頁底部複製結果！");
+    };
+
+    // 5. 重置分配功能 (關鍵新增)
+    document.getElementById('resetBtn').onclick = async () => {
+        if (!confirm("確定要將所有已分配名單（一隊、二隊）移回待分配嗎？")) return;
+        
+        const snapshot = await get(playersRef);
+        const data = snapshot.val();
+        if (!data) return;
+
+        const updates = {};
+        for (let key in data) {
+            // 只有在一隊或二隊的才需要移回
+            if (data[key].team === 'team1' || data[key].team === 'team2') {
+                updates[`/players/${key}/team`] = 'pool';
+            }
+        }
+
+        if (Object.keys(updates).length > 0) {
+            update(ref(db), updates)
+                .then(() => alert("已重置所有分配狀態！"))
+                .catch((err) => alert("重置失敗: " + err));
+        } else {
+            alert("目前沒有已分配的成員。");
+        }
     };
 </script>
 
