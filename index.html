@@ -38,6 +38,11 @@
 
         .export-section { margin-top: 20px; text-align: center; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
         #output { width: 100%; height: 100px; margin-top: 10px; display: none; }
+        
+        /* 危險按鈕樣式 */
+        .danger-zone { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; text-align: right; }
+        .btn-nuke { background: #333; font-size: 0.8rem; opacity: 0.7; }
+        .btn-nuke:hover { background: #000; opacity: 1; }
     </style>
 </head>
 <body>
@@ -85,11 +90,15 @@
         <button style="background: #dc3545;" id="resetBtn">重置分配 (回待分配)</button>
         <textarea id="output"></textarea>
     </div>
+
+    <div class="danger-zone">
+        <button class="btn-nuke" id="nukeBtn">⚠️ 強制清空整個資料庫 (修復BUG用)</button>
+    </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue, update, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, push, onValue, update, remove, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAV08lkRKtqclvDoju-cSmmN85fAM5fD-E",
@@ -153,7 +162,7 @@
         document.getElementById('pStyle').value = '';
     };
 
-    // 監聽資料 - 強化修正版
+    // 監聽資料 (除錯修復版)
     onValue(playersRef, (snapshot) => {
         const containers = {
             pool: document.getElementById('pool'),
@@ -161,16 +170,22 @@
             team2: document.getElementById('team2')
         };
         
-        // 1. 無論如何先清空畫面與計數
         Object.values(containers).forEach(c => c.innerHTML = '');
         let count = 0;
 
-        // 2. 檢查資料是否存在
         if (snapshot.exists()) {
             const data = snapshot.val();
             for (let key in data) {
-                count++;
                 const p = data[key];
+
+                // --- 關鍵修復：如果這筆資料沒有 team，視為壞檔，不計算也不顯示 ---
+                if (!p.team || !containers[p.team]) {
+                    console.warn("發現異常資料 (已自動隱藏):", p);
+                    continue; 
+                }
+
+                count++; // 確認資料正常且有地方放，才 +1
+
                 const card = document.createElement('div');
                 card.className = "card";
                 card.draggable = true;
@@ -193,14 +208,10 @@
                 };
                 
                 card.ondragstart = (e) => e.dataTransfer.setData("text", e.target.id);
-                
-                if (containers[p.team]) {
-                    containers[p.team].appendChild(card);
-                }
+                containers[p.team].appendChild(card);
             }
         }
 
-        // 3. 強制更新顯示
         document.getElementById('countTip').innerText = `目前人數: ${count}/30`;
     });
 
@@ -257,6 +268,16 @@
             update(ref(db), updates).then(() => alert("已重置所有分配狀態！"));
         } else {
             alert("目前沒有已分配的成員。");
+        }
+    };
+
+    // --- 新增：強制清空資料庫功能 ---
+    document.getElementById('nukeBtn').onclick = () => {
+        if(!checkAdmin()) return;
+        if(confirm("⚠️ 警告：這將會刪除資料庫裡「所有」成員資料，且無法復原！\n\n如果只是顯示錯誤，這招可以修好。確定要執行嗎？")) {
+            set(playersRef, null)
+                .then(() => alert("資料庫已強制清空，BUG 應該修好了！"))
+                .catch(err => alert("清空失敗: " + err));
         }
     };
 </script>
