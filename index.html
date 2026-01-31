@@ -117,15 +117,11 @@
     const membersRef = ref(db, 'members');
     const assignsRef = ref(db, 'assigns');
 
-    // 密碼驗證邏輯
     let isAdmin = false;
     const checkAdmin = () => {
         if (isAdmin) return true;
-        const password = prompt("請輸入管理者密碼以執行刪除：");
-        if (password === "0404") {
-            isAdmin = true;
-            return true;
-        }
+        const password = prompt("請輸入管理者密碼：");
+        if (password === "0404") { isAdmin = true; return true; }
         alert("密碼錯誤！");
         return false;
     };
@@ -135,18 +131,20 @@
         return colors[style] || '#007bff';
     };
 
+    // 新增成員
     document.getElementById('addBtn').onclick = () => {
         const name = document.getElementById('pName').value;
         const power = parseInt(document.getElementById('pPower').value);
         const style = document.getElementById('pStyle').value;
         const days = Array.from(document.querySelectorAll('input[name="pDay"]:checked')).map(n => n.value);
-        if (!name || isNaN(power) || days.length === 0) return alert("請填寫完整資訊");
+        if (!name || isNaN(power) || days.length === 0) return alert("請填寫完整資訊並勾選日期");
         push(membersRef, { name, power, style, days });
         document.getElementById('pName').value = '';
         document.getElementById('pPower').value = '';
         document.querySelectorAll('input[name="pDay"]').forEach(el => el.checked = false);
     };
 
+    // 渲染名單
     onValue(membersRef, (snapshot) => {
         const pool = document.getElementById('poolList');
         pool.innerHTML = '';
@@ -177,6 +175,7 @@
         }
     });
 
+    // 渲染分配區
     onValue(assignsRef, (snapshot) => {
         const ids = ['sat1', 'sat2', 'sun1', 'sun2'];
         const stats = { sat1:0, sat2:0, sun1:0, sun2:0 };
@@ -206,19 +205,38 @@
         });
     });
 
-    window.assign = (mid, targetTeam) => {
-        get(ref(db, `members/${mid}`)).then(snap => {
-            if(snap.exists()) push(assignsRef, { ...snap.val(), mid: mid, target: targetTeam });
+    // 分配邏輯（含同日重複判定）
+    window.assign = async (mid, targetTeam) => {
+        const snap = await get(assignsRef);
+        const currentAssigns = snap.val() || {};
+        
+        // 判定該成員在目標日期是否已有隊伍
+        // 取得目標日期的前綴（例如 'sat1' -> 'sat'）
+        const targetPrefix = targetTeam.substring(0, 3); 
+        
+        for (let aid in currentAssigns) {
+            const a = currentAssigns[aid];
+            if (a.mid === mid) {
+                const assignedPrefix = a.target.substring(0, 3);
+                if (assignedPrefix === targetPrefix) {
+                    const dayFull = targetPrefix === 'sat' ? '星期六' : '星期日';
+                    alert(`⚠️ 分配失敗！\n成員已經在 ${dayFull} 的別隊了。同一天只能參加一隊。`);
+                    return; // 終止分配
+                }
+            }
+        }
+
+        // 通過檢查，執行分配
+        get(ref(db, `members/${mid}`)).then(mSnap => {
+            if(mSnap.exists()) push(assignsRef, { ...mSnap.val(), mid: mid, target: targetTeam });
         });
     };
 
-    // 隊伍分身刪除不需要密碼 (方便頻繁微調)
     window.unassign = (aid) => remove(ref(db, `assigns/${aid}`));
 
-    // 總名單刪除需要密碼
     window.deleteMember = (mid) => {
         if(checkAdmin()) {
-            if(confirm("確定徹底移除此成員及其所有分配紀錄嗎？")) {
+            if(confirm("確定移除此成員及其所有分配紀錄嗎？")) {
                 remove(ref(db, `members/${mid}`));
                 get(assignsRef).then(snap => {
                     if(snap.exists()){
@@ -230,10 +248,9 @@
         }
     };
 
-    // 清空隊伍需要密碼
     document.getElementById('resetBtn').onclick = () => {
         if(checkAdmin()) {
-            if(confirm("確定要清空「所有隊伍」的分配嗎？(不影響總名單)")) set(assignsRef, null);
+            if(confirm("確定要清空「所有隊伍」嗎？")) set(assignsRef, null);
         }
     };
 
