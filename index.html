@@ -144,24 +144,29 @@
         const dayNodes = document.querySelectorAll('input[name="pDay"]:checked');
         const days = Array.from(dayNodes).map(node => node.value);
 
+        // --- 新增的判定邏輯 ---
         if (!name || !power || !style) {
-            alert("請填寫所有欄位");
+            alert("請填寫所有基本欄位（名稱、戰力、流派）");
             return;
         }
+
+        if (days.length === 0) {
+            alert("⚠️ 請至少勾選一個出勤時間（星期六或星期日）！");
+            return;
+        }
+        // --------------------
 
         push(playersRef, {
             name: name,
             power: power,
             style: style,
-            days: days, // 儲存陣列
+            days: days, 
             team: 'pool'
         });
         
-        // 重置勾選框
         document.querySelectorAll('input[name="pDay"]').forEach(el => el.checked = false);
     };
 
-    // 監聽資料
     onValue(playersRef, (snapshot) => {
         const containers = { pool: document.getElementById('pool'), team1: document.getElementById('team1'), team2: document.getElementById('team2') };
         Object.values(containers).forEach(c => c.innerHTML = '');
@@ -200,7 +205,6 @@
         document.getElementById('countTip').innerText = `目前人數: ${count}/30`;
     });
 
-    // 拖放、輸出、重置邏輯 (保持不變但優化輸出文字)
     document.querySelectorAll('.column').forEach(col => {
         const list = col.querySelector('.item-list');
         list.ondragover = (e) => { e.preventDefault(); list.classList.add('drag-over'); };
@@ -222,7 +226,7 @@
             const cards = document.getElementById(teamId).getElementsByClassName('card');
             if (cards.length === 0) result += "(無)\n";
             for (let card of cards) {
-                const nameText = card.querySelector('.name').innerText; // 這裡會包含名字跟星期標籤
+                const nameText = card.querySelector('.name').innerText;
                 const info = card.querySelectorAll('p')[1].innerText;
                 result += `- ${nameText} (${info})\n`;
             }
