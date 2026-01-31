@@ -17,14 +17,30 @@
 
         .main-layout { display: flex; gap: 20px; align-items: flex-start; }
         
-        /* 左側名單池：簡潔透明感 */
+        /* 左側名單池 */
         .pool-section { 
-            width: 160px; background: rgba(255,255,255,0.9); padding: 15px; border-radius: 12px; 
+            width: 180px; background: rgba(255,255,255,0.9); padding: 15px; border-radius: 12px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: sticky; top: 10px; 
             border: 1px solid #ddd;
         }
         
         .board { flex-grow: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+
+        /* 勾選框對齊修正 */
+        .day-check-group {
+            margin: 10px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+        .day-check {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .day-check input { width: auto !important; margin: 0 5px 0 0 !important; }
 
         /* 動態流光邊框容器 */
         .column { 
@@ -35,7 +51,6 @@
             z-index: 1;
         }
 
-        /* 邊框動畫效果 */
         .column::before {
             content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
             background: conic-gradient(transparent, transparent, transparent, #007bff);
@@ -50,47 +65,59 @@
 
         @keyframes rotate { 100% { transform: rotate(360deg); } }
 
-        .column h2 { text-align: center; font-size: 1.2rem; margin-bottom: 10px; font-weight: bold; color: #333; }
+        .column h2 { text-align: center; font-size: 1.3rem; margin-bottom: 10px; font-weight: bold; }
         .column.sat h2 { color: #e91e63; }
         .column.sun h2 { color: #3f51b5; }
 
-        .stat-bar { background: #f8f9fa; text-align: center; font-size: 0.85rem; padding: 6px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed #ccc; }
+        .stat-bar { background: #f8f9fa; text-align: center; font-size: 1rem; padding: 8px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed #ccc; font-weight: bold; }
         .item-list { flex-grow: 1; min-height: 350px; }
 
-        /* 卡片裝飾 */
+        /* 卡片通用樣式 */
         .card { 
             background: white; border-radius: 8px; padding: 10px; margin-bottom: 10px; 
             box-shadow: 0 3px 6px rgba(0,0,0,0.05); border-left: 6px solid #007bff; position: relative;
             transition: transform 0.2s; border: 1px solid #eee;
         }
-        .card:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .card p { margin: 3px 0; font-size: 0.8rem; }
-        .card .name { font-weight: bold; font-size: 0.9rem; color: #222; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .card p { margin: 3px 0; }
+        .card .name { font-weight: bold; color: #222; }
+
+        /* --- 隊伍內卡片特別強化 --- */
+        .item-list .card {
+            padding: 12px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .item-list .card .name {
+            font-size: 1.1rem; /* 字體加大 */
+            display: block;
+            margin-bottom: 4px;
+        }
+        .item-list .card p {
+            font-size: 0.95rem; /* 資訊字體加大 */
+            font-weight: 500;
+        }
 
         /* 按鈕視覺 */
         button { transition: all 0.2s; cursor: pointer; border: none; }
-        button:hover { opacity: 0.8; transform: translateY(-1px); }
-        button:active { transform: translateY(0); }
-
         .assign-btns { margin-top: 8px; display: flex; gap: 4px; flex-wrap: wrap; }
         .assign-btns button { padding: 4px 6px; font-size: 11px; border-radius: 4px; color: white; flex: 1 1 45%; }
         .btn-sat { background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); }
         .btn-sun { background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); }
-        .btn-assigned { background: #d1d1d1 !important; cursor: not-allowed !important; transform: none !important; }
+        .btn-assigned { background: #d1d1d1 !important; cursor: not-allowed !important; }
 
         .del-btn {
-            position: absolute; top: 5px; right: 5px;
+            position: absolute; top: 8px; right: 8px;
             background: #ff4d4d; color: white; border-radius: 50%;
-            width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center;
+            width: 22px; height: 22px; font-size: 12px; display: flex; align-items: center; justify-content: center;
+            z-index: 10;
         }
         
-        #addBtn { width: 100%; background: #333; color: white; padding: 8px; border-radius: 6px; margin-top: 10px; font-weight: bold; }
-        .input-group input { width: 90%; padding: 7px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 5px; }
+        #addBtn { width: 100%; background: #333; color: white; padding: 10px; border-radius: 6px; margin-top: 10px; font-weight: bold; font-size: 1rem; }
+        .input-group input { width: 90%; padding: 8px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.9rem; }
 
         .export-section { margin-top: 30px; text-align: center; padding-bottom: 50px; }
-        #output { width: 80%; height: 150px; display: none; margin: 15px auto; border-radius: 8px; border: 2px solid #ddd; font-family: monospace; }
+        #output { width: 80%; height: 150px; display: none; margin: 15px auto; border-radius: 8px; border: 2px solid #ddd; }
 
-        /* 高亮特效 */
         .column.highlight::after { background: #f0fff4; }
     </style>
 </head>
@@ -109,7 +136,7 @@
                     <option value="威威"><option value="玉玉"><option value="霖霖">
                     <option value="無名"><option value="九九"><option value="雙刀">
                 </datalist>
-                <div style="margin: 8px 0; display: flex; justify-content: space-around;">
+                <div class="day-check-group">
                     <label class="day-check"><input type="checkbox" name="pDay" value="六"> 六</label>
                     <label class="day-check"><input type="checkbox" name="pDay" value="日"> 日</label>
                 </div>
@@ -123,22 +150,22 @@
         <div class="board">
             <div class="column sat" id="col-sat1">
                 <h2>禮拜六 一隊</h2>
-                <div class="stat-bar" id="stat-sat1">戰力: 0 | 0人</div>
+                <div class="stat-bar" id="stat-sat1">總戰力: 0 | 0人</div>
                 <div class="item-list" id="sat1"></div>
             </div>
             <div class="column sat" id="col-sat2">
                 <h2>禮拜六 二隊</h2>
-                <div class="stat-bar" id="stat-sat2">戰力: 0 | 0人</div>
+                <div class="stat-bar" id="stat-sat2">總戰力: 0 | 0人</div>
                 <div class="item-list" id="sat2"></div>
             </div>
             <div class="column sun" id="col-sun1">
                 <h2>禮拜日 一隊</h2>
-                <div class="stat-bar" id="stat-sun1">戰力: 0 | 0人</div>
+                <div class="stat-bar" id="stat-sun1">總戰力: 0 | 0人</div>
                 <div class="item-list" id="sun1"></div>
             </div>
             <div class="column sun" id="col-sun2">
                 <h2>禮拜日 二隊</h2>
-                <div class="stat-bar" id="stat-sun2">戰力: 0 | 0人</div>
+                <div class="stat-bar" id="stat-sun2">總戰力: 0 | 0人</div>
                 <div class="item-list" id="sun2"></div>
             </div>
         </div>
@@ -179,10 +206,17 @@
         return false;
     };
 
-    const getStyleColor = (style) => {
-        const colors = { '九九': '#00008B', '無名': '#87CEFA', '威威': '#FFA500', '霖霖': '#32CD32', '玉玉': '#006400', '雙刀': '#800080' };
-        return colors[style] || '#007bff';
+    // 定義職業顏色
+    const styleColors = { 
+        '九九': { main: '#00008B', light: '#e6f0ff' }, 
+        '無名': { main: '#0099ff', light: '#f0f9ff' }, 
+        '威威': { main: '#cc7a00', light: '#fff9e6' }, 
+        '霖霖': { main: '#008000', light: '#f0fff0' }, 
+        '玉玉': { main: '#004d00', light: '#e6ffe6' }, 
+        '雙刀': { main: '#800080', light: '#f9f0f9' } 
     };
+
+    const getColors = (style) => styleColors[style] || { main: '#007bff', light: '#ffffff' };
 
     let globalAssigns = {};
 
@@ -193,7 +227,7 @@
     });
 
     onValue(membersRef, (snapshot) => {
-        renderPool(snapshot.val());
+        renderPool();
     });
 
     function renderPool() {
@@ -210,7 +244,7 @@
 
                 const card = document.createElement('div');
                 card.className = "card";
-                card.style.borderLeftColor = getStyleColor(m.style);
+                card.style.borderLeftColor = getColors(m.style).main;
                 
                 let btns = '';
                 if(m.days.includes('六')) {
@@ -227,8 +261,7 @@
                 card.innerHTML = `
                     <button class="del-btn" onclick="deleteMember('${id}')">✕</button>
                     <p class="name">${m.name}</p>
-                    <p>戰: ${m.power.toLocaleString()}</p>
-                    <p>職: ${m.style}</p>
+                    <p style="font-size:0.75rem">戰: ${m.power.toLocaleString()} | ${m.style}</p>
                     <div class="assign-btns">${btns}</div>
                 `;
                 pool.appendChild(card);
@@ -248,13 +281,19 @@
             if (!container) continue;
             stats[a.target] += a.power;
             counts[a.target]++;
+            
             const card = document.createElement('div');
             card.className = "card";
-            card.style.borderLeftColor = getStyleColor(a.style);
+            const colors = getColors(a.style);
+            
+            // 套用職業色彩
+            card.style.borderLeftColor = colors.main;
+            card.style.backgroundColor = colors.light;
+            
             card.innerHTML = `
                 <button class="del-btn" onclick="unassign('${aid}')">✕</button>
                 <p class="name">${a.name}</p>
-                <p>戰力: ${a.power.toLocaleString()} | ${a.style}</p>
+                <p style="color: ${colors.main}">戰力: ${a.power.toLocaleString()} | 流派: ${a.style}</p>
             `;
             container.appendChild(card);
         }
@@ -300,33 +339,21 @@
 
     document.getElementById('exportBtn').onclick = () => {
         let res = "--- 🌸 墨雨笙花 百業戰配置結果 ---\n";
-        const chineseTitles = {
-            'sat1': '【 禮拜六 一隊 】',
-            'sat2': '【 禮拜六 二隊 】',
-            'sun1': '【 禮拜日 一隊 】',
-            'sun2': '【 禮拜日 二隊 】'
-        };
-
+        const chineseTitles = { 'sat1':'禮拜六 一隊', 'sat2':'禮拜六 二隊', 'sun1':'禮拜日 一隊', 'sun2':'禮拜日 二隊' };
         ['sat1', 'sat2', 'sun1', 'sun2'].forEach(id => {
-            res += `\n${chineseTitles[id]}\n`;
+            res += `\n【 ${chineseTitles[id]} 】\n`;
             const container = document.getElementById(id);
             const cards = container.querySelectorAll('.card');
-            if (cards.length === 0) {
-                res += " (尚無成員)\n";
-            } else {
-                cards.forEach(c => {
-                    const name = c.querySelector('.name').innerText;
-                    const info = c.querySelectorAll('p')[1].innerText;
-                    res += `- ${name} (${info})\n`;
-                });
-            }
+            if (cards.length === 0) res += " (尚無成員)\n";
+            else cards.forEach(c => {
+                const name = c.querySelector('.name').innerText;
+                const info = c.querySelectorAll('p')[0].innerText;
+                res += `- ${name} (${info})\n`;
+            });
         });
-
         const out = document.getElementById('output');
-        out.value = res; 
-        out.style.display = 'block';
-        out.select();
-        alert("配置清單已生成，請複製下方文字框內容。");
+        out.value = res; out.style.display = 'block'; out.select();
+        alert("配置清單已生成！");
     };
 </script>
 
