@@ -4,87 +4,68 @@
     <meta charset="UTF-8">
     <title>墨雨笙花百業戰配置表</title>
     <style>
-        body { font-family: sans-serif; background: #f4f4f9; padding: 20px; margin: 0; }
-        .container { max-width: 1200px; margin: auto; }
-        .input-section { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        input { padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        body { font-family: sans-serif; background: #f4f4f9; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; }
+        .input-section { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input { padding: 8px; margin-right: 10px; border: 1px solid #ddd; border-radius: 4px; }
         button { padding: 8px 15px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #0056b3; }
         
-        /* 畫板佈局 */
-        .board { display: flex; gap: 20px; justify-content: center; align-items: flex-start; }
+        .board { display: flex; gap: 15px; justify-content: flex-start; align-items: flex-start; }
+        .column { background: #e2e2e2; border-radius: 8px; width: 310px; min-height: 500px; padding: 15px; display: flex; flex-direction: column; }
+        .column h2 { text-align: center; font-size: 1.2rem; color: #333; margin-top: 0; }
+        .item-list { flex-grow: 1; min-height: 450px; border: 2px dashed transparent; }
+        .item-list.drag-over { background: #d0d0d0; border-color: #007bff; }
         
-        /* 固定外框：高度固定 650px，禁止溢出 */
-        .column { 
-            background: #e2e2e2; 
-            border-radius: 12px; 
-            width: 350px; 
-            height: 650px; 
-            padding: 15px; 
-            display: flex; 
-            flex-direction: column; 
-            box-sizing: border-box;
-            overflow: hidden; /* 絕對不讓內容跑出來 */
-        }
-        
-        .column h2 { text-align: center; margin: 0 0 10px 0; font-size: 1.2rem; flex-shrink: 0; }
-        
-        /* 成員列表容器：強制垂直排列 */
-        .item-list { 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; /* 強制垂直一行一個 */
-            gap: 4px; 
-            min-height: 0; /* 修正 flex 容器溢出 bug */
-            overflow: hidden; 
-        }
-        
-        /* 卡片自適應縮放 */
         .card { 
-            background: white; 
-            border-radius: 6px; 
+            background: white; border-radius: 5px; padding: 10px; margin-bottom: 10px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: grab; 
             border-left: 8px solid #007bff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 5px 10px;
-            box-sizing: border-box;
-            width: 100%; /* 寬度永遠撐滿 */
-            flex: 1 1 0%; /* 關鍵：所有卡片平分剩餘空間，且允許縮小到 0 */
-            min-height: 0; /* 允許極度壓縮 */
             position: relative;
-            transition: all 0.2s;
         }
-
-        .card p { margin: 0; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card .name { font-weight: bold; }
+        .card:active { cursor: grabbing; }
+        .card p { margin: 5px 0; font-size: 0.9rem; }
+        .card .name { font-weight: bold; font-size: 1rem; padding-right: 20px; }
         
         .del-btn {
-            position: absolute; top: 50%; right: 5px; transform: translateY(-50%);
+            position: absolute; top: 5px; right: 5px;
             background: #ff4d4d; color: white; border: none; border-radius: 50%;
-            width: 18px; height: 18px; font-size: 10px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; z-index: 10;
+            width: 20px; height: 20px; font-size: 12px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            line-height: 1;
         }
+        .del-btn:hover { background: #cc0000; }
 
-        .export-section { margin-top: 20px; text-align: center; }
+        .export-section { margin-top: 20px; text-align: center; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
         #output { width: 100%; height: 100px; margin-top: 10px; display: none; }
-        .danger-zone { margin-top: 30px; text-align: right; opacity: 0.6; }
+        
+        /* 危險區域按鈕 */
+        .danger-zone { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; text-align: right; }
+        .btn-nuke { background: #333; font-size: 0.8rem; opacity: 0.7; }
+        .btn-nuke:hover { background: #000; opacity: 1; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1 style="text-align: center;">🌸 墨雨笙花百業戰配置表</h1>
+    <h1>🌸 墨雨笙花百業戰配置表</h1>
     
     <div class="input-section">
         <input type="text" id="pName" placeholder="遊戲名稱">
-        <input type="number" id="pPower" placeholder="戰力">
-        <input type="text" id="pStyle" list="styleOptions" placeholder="流派">
+        <input type="number" id="pPower" placeholder="戰力數值">
+        
+        <input type="text" id="pStyle" list="styleOptions" placeholder="選擇或輸入流派">
         <datalist id="styleOptions">
-            <option value="威威"><option value="玉玉"><option value="霖霖"><option value="無名"><option value="九九"><option value="雙刀">
+            <option value="威威">
+            <option value="玉玉">
+            <option value="霖霖">
+            <option value="無名">
+            <option value="九九">
+            <option value="雙刀">
         </datalist>
-        <button id="addBtn" style="background: #28a745;">加入名單</button>
-        <span id="countTip">人數: 0/30</span>
+
+        <button id="addBtn">加入名單</button>
+        <span id="countTip">目前人數: 0/30</span>
     </div>
 
     <div class="board">
@@ -92,30 +73,32 @@
             <h2>待分配名單</h2>
             <div class="item-list" id="pool"></div>
         </div>
+        
         <div class="column" data-team="team1">
             <h2>一隊</h2>
-            <div id="team1" class="item-list"></div>
+            <div class="item-list" id="team1"></div>
         </div>
+        
         <div class="column" data-team="team2">
             <h2>二隊</h2>
-            <div id="team2" class="item-list"></div>
+            <div class="item-list" id="team2"></div>
         </div>
     </div>
 
     <div class="export-section">
-        <button id="exportBtn" style="background: #007bff; padding: 10px 25px;">輸出分配結果</button>
-        <button id="resetBtn" style="background: #6c757d; padding: 10px 25px; margin-left: 10px;">重置分配</button>
+        <button style="background: #28a745;" id="exportBtn">輸出分配結果</button>
+        <button style="background: #dc3545;" id="resetBtn">重置分配 (回待分配)</button>
         <textarea id="output"></textarea>
     </div>
 
     <div class="danger-zone">
-        <button id="nukeBtn" style="background: #333; font-size: 12px;">⚠️ 強制清空數據</button>
+        <button class="btn-nuke" id="nukeBtn">⚠️ 強制清空整個資料庫 (修復BUG用)</button>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue, update, remove, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, push, onValue, update, remove, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAV08lkRKtqclvDoju-cSmmN85fAM5fD-E",
@@ -132,98 +115,169 @@
     const db = getDatabase(app);
     const playersRef = ref(db, 'players');
 
-    const getStyleColor = (s) => {
-        const c = {'九九':'#00008B','無名':'#87CEFA','威威':'#FFA500','霖霖':'#32CD32','玉玉':'#006400','雙刀':'#800080'};
-        return c[s] || '#007bff';
+    // 流派顏色對照
+    const getStyleColor = (style) => {
+        const colors = {
+            '九九': '#00008B', // 深藍
+            '無名': '#87CEFA', // 淺藍
+            '威威': '#FFA500', // 橘色
+            '霖霖': '#32CD32', // 綠色
+            '玉玉': '#006400', // 深綠色
+            '雙刀': '#800080'  // 紫色
+        };
+        return colors[style] || '#007bff';
     };
 
-    // 動態縮放文字邏輯
-    const autoScale = (containerId) => {
-        const container = document.getElementById(containerId);
-        const cards = container.getElementsByClassName('card');
-        const count = cards.length;
-        if (count === 0) return;
-
-        // 根據人數計算字體大小 (基礎 16px，最少 9px)
-        let fontSize = Math.max(9, 16 - (count * 0.4));
-        // 根據人數調整 Padding
-        let paddingV = Math.max(2, 8 - (count * 0.3));
-
-        for (let card of cards) {
-            card.style.paddingTop = paddingV + "px";
-            card.style.paddingBottom = paddingV + "px";
-            card.style.fontSize = fontSize + "px";
-            card.querySelector('.name').style.fontSize = (fontSize + 2) + "px";
-            
-            // 如果太擠了，隱藏詳細資訊只留名字
-            const info = card.querySelector('.info-text');
-            if (count > 15) {
-                info.style.display = 'none';
-            } else {
-                info.style.display = 'block';
-            }
+    // 管理員權限檢查
+    let isAdmin = false;
+    const checkAdmin = () => {
+        if (isAdmin) return true;
+        const password = prompt("請輸入管理者密碼以執行此操作：");
+        if (password === "0404") {
+            isAdmin = true;
+            return true;
+        } else {
+            alert("密碼錯誤，拒絕操作。");
+            return false;
         }
     };
 
+    // 加入名單 (不重置輸入框)
     document.getElementById('addBtn').onclick = () => {
         const name = document.getElementById('pName').value;
         const power = document.getElementById('pPower').value;
         const style = document.getElementById('pStyle').value;
-        if (name && power && style) push(playersRef, { name, power, style, team: 'pool' });
+
+        if (!name || !power || !style) {
+            alert("請填寫所有欄位");
+            return;
+        }
+
+        push(playersRef, {
+            name: name,
+            power: power,
+            style: style,
+            team: 'pool'
+        });
+        // 已移除清空代碼，保留內容供快速連續輸入
     };
 
+    // 實時監聽資料庫
     onValue(playersRef, (snapshot) => {
-        const lists = { pool: document.getElementById('pool'), team1: document.getElementById('team1'), team2: document.getElementById('team2') };
-        Object.values(lists).forEach(l => l.innerHTML = '');
-        let total = 0;
+        const containers = {
+            pool: document.getElementById('pool'),
+            team1: document.getElementById('team1'),
+            team2: document.getElementById('team2')
+        };
+        
+        Object.values(containers).forEach(c => c.innerHTML = '');
+        let count = 0;
 
         if (snapshot.exists()) {
             const data = snapshot.val();
             for (let key in data) {
                 const p = data[key];
-                if (!lists[p.team]) continue;
-                total++;
+                
+                // 排除損壞或不完整的資料
+                if (!p.team || !containers[p.team]) continue;
+
+                count++; 
+
                 const card = document.createElement('div');
                 card.className = "card";
                 card.draggable = true;
                 card.id = key;
                 card.style.borderLeftColor = getStyleColor(p.style);
+                
                 card.innerHTML = `
-                    <button class="del-btn">✕</button>
+                    <button class="del-btn" title="移除名單">✕</button>
                     <p class="name">${p.name}</p>
-                    <p class="info-text">戰力: ${p.power} | 流派: ${p.style}</p>
+                    <p>戰力: ${p.power} | 流派: ${p.style}</p>
                 `;
+                
+                // 刪除功能，強制驗證權限
                 card.querySelector('.del-btn').onclick = (e) => {
                     e.stopPropagation();
-                    if(confirm("確定移除？")) remove(ref(db, `players/${key}`));
+                    if(checkAdmin()) {
+                        if(confirm(`確定要移除「${p.name}」嗎？`)) {
+                            remove(ref(db, `players/${key}`));
+                        }
+                    }
                 };
+                
                 card.ondragstart = (e) => e.dataTransfer.setData("text", e.target.id);
-                lists[p.team].appendChild(card);
+                containers[p.team].appendChild(card);
             }
         }
-        document.getElementById('countTip').innerText = `人數: ${total}/30`;
-        autoScale('pool'); autoScale('team1'); autoScale('team2');
+        document.getElementById('countTip').innerText = `目前人數: ${count}/30`;
     });
 
+    // 拖放邏輯
     document.querySelectorAll('.column').forEach(col => {
         const list = col.querySelector('.item-list');
-        list.ondragover = (e) => e.preventDefault();
+        list.ondragover = (e) => { e.preventDefault(); list.classList.add('drag-over'); };
+        list.ondragleave = () => list.classList.remove('drag-over');
         list.ondrop = (e) => {
-            const id = e.dataTransfer.getData("text");
-            update(ref(db, `players/${id}`), { team: col.dataset.team });
+            e.preventDefault();
+            list.classList.remove('drag-over');
+            const playerId = e.dataTransfer.getData("text");
+            const targetTeam = col.getAttribute('data-team');
+            update(ref(db, `players/${playerId}`), { team: targetTeam });
         };
     });
 
-    // 輸出與重置邏輯 (略，與前版相同)
+    // 輸出結果
+    document.getElementById('exportBtn').onclick = () => {
+        let result = "--- 墨雨笙花百業配置結果 ---\n\n";
+        const teams = { team1: '【一隊】', team2: '【二隊】', pool: '【待分配】' };
+        
+        for (let teamId in teams) {
+            result += teams[teamId] + "\n";
+            const cards = document.getElementById(teamId).getElementsByClassName('card');
+            if (cards.length === 0) result += "(無)\n";
+            for (let card of cards) {
+                const name = card.querySelector('.name').innerText;
+                const info = card.querySelectorAll('p')[1].innerText;
+                result += `- ${name} (${info})\n`;
+            }
+            result += "\n";
+        }
+        const outputArea = document.getElementById('output');
+        outputArea.value = result;
+        outputArea.style.display = 'block';
+        alert("輸出完成，請在網頁底部複製結果！");
+    };
+
+    // 重置分配 (回待分配)
     document.getElementById('resetBtn').onclick = async () => {
-        const snap = await get(playersRef);
-        if (snap.exists()) {
-            const updates = {};
-            for (let k in snap.val()) updates[`/players/${k}/team`] = 'pool';
-            update(ref(db), updates);
+        if (!checkAdmin()) return;
+        if (!confirm("確定要將所有已分配名單（一隊、二隊）移回待分配嗎？")) return;
+        const snapshot = await get(playersRef);
+        if (!snapshot.exists()) return;
+        
+        const data = snapshot.val();
+        const updates = {};
+        for (let key in data) {
+            if (data[key].team === 'team1' || data[key].team === 'team2') {
+                updates[`/players/${key}/team`] = 'pool';
+            }
+        }
+        if (Object.keys(updates).length > 0) {
+            update(ref(db), updates).then(() => alert("已重置所有分配狀態！"));
         }
     };
-    document.getElementById('nukeBtn').onclick = () => { if(confirm("危險操作！清空所有數據？")) set(playersRef, null); };
+
+    // 強制清空 (修復用)
+    document.getElementById('nukeBtn').onclick = () => {
+        if(!checkAdmin()) return;
+        if(confirm("⚠️ 警告：這將會徹底刪除所有成員資料！確定要執行嗎？")) {
+            set(playersRef, null)
+                .then(() => {
+                    isAdmin = false; // 操作完重置權限
+                    alert("資料庫已清空，人數應已歸零。");
+                });
+        }
+    };
 </script>
 
 </body>
