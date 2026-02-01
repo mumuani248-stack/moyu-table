@@ -36,7 +36,7 @@
             flex-direction: column;
         }
 
-        /* --- 單個成員卡片：內置掃光特效 --- */
+        /* --- 成員卡片：左至右柔和掃光 --- */
         .card { 
             background: #2d2d32; 
             border-radius: 6px; 
@@ -48,49 +48,59 @@
             display: flex; 
             flex-direction: column;
             gap: 4px;
-            overflow: hidden; /* 必備：隱藏卡片內的掃光軌跡 */
+            overflow: hidden; /* 確保光束不出框 */
             transition: transform 0.2s;
         }
 
-        /* 卡片內的掃描線動畫 */
+        /* 柔和橫向掃光實作 */
         .card::after {
             content: "";
             position: absolute;
-            top: -150%;
-            left: -50%;
-            width: 200%;
+            top: 0;
+            left: -150%;
+            width: 150%;
             height: 100%;
-            /* 調整為斜向掃光，更具動態感 */
+            /* 改為向右傾斜的超柔和漸層 */
             background: linear-gradient(
-                to bottom,
-                transparent,
-                rgba(255, 255, 255, 0.02) 45%,
-                rgba(255, 255, 255, 0.15) 50%,
-                rgba(255, 255, 255, 0.02) 55%,
+                90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.01) 30%, 
+                rgba(255, 255, 255, 0.08) 50%, 
+                rgba(255, 255, 255, 0.01) 70%, 
                 transparent
             );
-            transform: rotate(-20deg);
-            animation: cardScan 3.5s infinite ease-in-out;
+            transform: skewX(-20deg); /* 傾斜讓光影更自然 */
+            animation: softScan 4s infinite linear;
             pointer-events: none;
             z-index: 1;
         }
 
-        @keyframes cardScan {
-            0% { top: -150%; }
-            100% { top: 150%; }
+        @keyframes softScan {
+            0% { left: -150%; }
+            100% { left: 150%; }
         }
 
-        .card:hover { background: #35353b; transform: translateX(3px); }
-        .card p { margin: 0; white-space: nowrap; font-size: 0.9rem; position: relative; z-index: 2; }
+        /* 懸停效果 */
+        .card:hover { 
+            background: #35353b; 
+            transform: translateX(3px); 
+            border-color: #555;
+        }
+        
+        /* 內容層級確保 */
+        .card p, .card .assign-btns, .card .del-btn {
+            position: relative;
+            z-index: 2;
+        }
+
         .card .name { font-weight: bold; }
         .card .info-text { color: #aaa; font-size: 0.8rem; }
 
-        /* 其餘 UI 保持不變 */
+        /* 其餘板塊保持原樣 */
         .board { flex-grow: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         .day-check-group { margin: 10px 0; display: flex; justify-content: center; gap: 12px; }
         .day-check { display: flex; align-items: center; font-size: 0.85rem; cursor: pointer; gap: 4px; }
 
-        /* 隊伍流光效果 */
         .column { 
             position: relative; background: #252529; border-radius: 12px; padding: 12px; min-height: 400px; 
             display: flex; flex-direction: column; overflow: hidden; z-index: 1;
@@ -109,12 +119,12 @@
         .item-list { flex-grow: 1; }
         
         button { cursor: pointer; border: none; transition: 0.2s; }
-        .assign-btns { display: flex; gap: 3px; width: 100%; position: relative; z-index: 5; }
+        .assign-btns { display: flex; gap: 3px; width: 100%; }
         .assign-btns button { padding: 3px 0; font-size: 11px; border-radius: 3px; color: white; flex: 1; font-weight: bold; }
         .btn-sat { background: #ff4d6d; }
         .btn-sun { background: #4361ee; }
         .btn-assigned { background: #444 !important; color: #888 !important; }
-        .del-btn { position: absolute; top: 5px; right: 5px; background: rgba(255, 77, 77, 0.6); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center; z-index: 10; }
+        .del-btn { position: absolute; top: 5px; right: 5px; background: rgba(255, 77, 77, 0.6); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center; }
         
         .input-group input { width: 100%; padding: 8px; margin-bottom: 6px; box-sizing: border-box; border: 1px solid #444; border-radius: 4px; background: #121214; color: #fff; font-size: 0.85rem; }
         #addBtn { width: 100%; background: #4e4e54; color: white; padding: 10px; border-radius: 4px; font-weight: bold; }
@@ -153,7 +163,6 @@
             <div class="column sun" id="col-sun2"><h2>禮拜日 二隊</h2><div class="stat-bar" id="stat-sun2">0 | 0人</div><div class="item-list" id="sun2"></div></div>
         </div>
     </div>
-
     <div class="export-section">
         <button style="background: #2d6a4f; color: white;" id="exportBtn">📋 輸出配置</button>
         <button style="background: #444; color: #ccc;" id="resetBtn">🗑️ 清空分配</button>
@@ -200,13 +209,11 @@
     };
 
     const getColors = (style) => styleColors[style] || { main: '#aaa', light: 'rgba(255,255,255,0.05)' };
-
     let globalAssigns = {};
 
     onValue(assignsRef, (snapshot) => {
         globalAssigns = snapshot.val() || {};
-        renderPool(); 
-        renderTeams(); 
+        renderPool(); renderTeams(); 
     });
 
     onValue(membersRef, (snapshot) => { renderPool(); });
@@ -258,13 +265,11 @@
             const container = document.getElementById(a.target);
             if (!container) continue;
             stats[a.target] += a.power; counts[a.target]++;
-            
             const card = document.createElement('div');
             card.className = "card";
             const colors = getColors(a.style);
             card.style.borderLeftColor = colors.main;
             card.style.backgroundColor = colors.light;
-            
             card.innerHTML = `
                 <button class="del-btn" onclick="unassign('${aid}')">✕</button>
                 <p class="name">${a.name}</p>
@@ -293,7 +298,6 @@
     };
 
     window.unassign = (aid) => remove(ref(db, `assigns/${aid}`));
-    
     window.deleteMember = (mid) => {
         if(checkAdmin() && confirm("確定從名冊中刪除此成員？")) {
             remove(ref(db, `members/${mid}`));
@@ -301,31 +305,21 @@
         }
     };
 
-    document.getElementById('resetBtn').onclick = () => { 
-        if(checkAdmin() && confirm("確定要清空『所有隊伍分配』嗎？（名冊不會動）")) set(assignsRef, null); 
-    };
-
+    document.getElementById('resetBtn').onclick = () => { if(checkAdmin() && confirm("確定要清空『所有隊伍分配』嗎？")) set(assignsRef, null); };
     document.getElementById('clearAllBtn').onclick = () => {
-        if(checkAdmin() && confirm("⚠️ 注意！這會刪除『整個名冊』和『所有隊伍』！\n確定要執行毀滅性清空嗎？")) {
-            set(membersRef, null);
-            set(assignsRef, null);
-            alert("已全部清空！");
+        if(checkAdmin() && confirm("⚠️ 注意！這會刪除『整個名冊』和『所有隊伍』！")) {
+            set(membersRef, null); set(assignsRef, null);
         }
     };
-
     document.getElementById('exportBtn').onclick = () => {
         let res = "--- 🌸 墨雨笙花 百業戰配置結果 ---\n";
-        const titles = { 'sat1': '禮拜六 一隊', 'sat2': '禮拜六 二隊', 'sun1': '禮拜日 一隊', 'sun2': '禮拜日 二隊' };
         ['sat1', 'sat2', 'sun1', 'sun2'].forEach(id => {
-            res += `\n【 ${titles[id]} 】\n`;
-            const cards = document.getElementById(id).querySelectorAll('.card');
-            if (cards.length === 0) res += " (尚無成員)\n";
-            else cards.forEach(c => {
+            res += `\n【 ${id} 】\n`;
+            document.getElementById(id).querySelectorAll('.card').forEach(c => {
                 res += `- ${c.querySelector('.name').innerText} (${c.querySelector('.info-text').innerText})\n`;
             });
         });
-        const out = document.getElementById('output');
-        out.value = res; out.style.display = 'block'; out.select();
+        const out = document.getElementById('output'); out.value = res; out.style.display = 'block'; out.select();
     };
 </script>
 
