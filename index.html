@@ -54,38 +54,50 @@
             font-weight: bold;
         }
 
-        /* --- 🌸 分類標題樣式升級 --- */
+        /* --- 🛠️ 一鍵控制按鈕樣式 --- */
+        .ctrl-btn-group { display: flex; gap: 8px; margin-bottom: 10px; }
+        .small-ctrl-btn {
+            flex: 1; padding: 6px; background: #3a3a3f; color: #ccc; 
+            border: 1px solid #555; border-radius: 4px; font-size: 0.8rem; 
+            cursor: pointer; transition: 0.2s; font-weight: bold;
+        }
+        .small-ctrl-btn:hover { background: #4e4e54; color: #fff; border-color: #888; }
+
+        /* --- 🌸 強化版分類標題 (對應職業顏色與粗體) --- */
         .style-group-header {
-            font-size: 1.1rem; /* 加大字體 */
-            color: #fff;
-            margin: 10px 0 5px 0;
-            padding: 10px 12px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 6px;
-            cursor: pointer; /* 顯示可點擊 */
+            font-size: 1.15rem; 
+            font-weight: 900; /* 強制粗體 */
+            margin: 8px 0 4px 0;
+            padding: 12px 15px;
+            background: #2d2d32;
+            border-radius: 8px;
+            cursor: pointer;
             display: flex; 
             justify-content: space-between;
             align-items: center;
-            transition: background 0.2s;
-            border-left: 4px solid #666;
+            transition: all 0.2s;
+            border: 1px solid #3d3d42;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
         }
-        .style-group-header:hover { background: rgba(255,255,255,0.1); }
-        .style-group-header::after {
-            content: '▼';
+        .style-group-header:hover { filter: brightness(1.2); background: #35353a; }
+        
+        /* 箭頭旋轉 */
+        .style-group-header .arrow {
             font-size: 0.8rem;
             transition: transform 0.3s;
+            opacity: 0.7;
         }
-        .style-group-header.collapsed::after { transform: rotate(-90deg); }
+        .style-group-header.collapsed .arrow { transform: rotate(-90deg); }
 
-        /* 摺疊容器 */
+        /* 摺疊內容容器 */
         .style-group-content {
             overflow: hidden;
-            transition: max-height 0.3s ease-out;
-            max-height: 2000px; /* 足夠大的高度 */
+            transition: max-height 0.4s cubic-bezier(0, 1, 0, 1);
+            max-height: 2000px;
         }
         .style-group-content.hidden { max-height: 0; }
 
-        /* --- 卡片特效 --- */
+        /* --- 卡片樣式 --- */
         .card { 
             background: #2d2d32; 
             border-radius: 4px; 
@@ -96,13 +108,6 @@
             overflow: hidden; 
             transition: transform 0.2s;
         }
-        .card::after {
-            content: ""; position: absolute; top: 0; left: -150%; width: 150%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05) 50%, transparent);
-            transform: skewX(-25deg); animation: softScan 6s infinite linear;
-        }
-        @keyframes softScan { 0% { left: -150%; } 100% { left: 150%; } }
-
         .card-content { display: flex; align-items: center; gap: 10px; z-index: 2; position: relative; }
         .card .name { font-weight: bold; color: #ffffff; }
         .card .power-text { color: #aaa; font-size: 0.85rem; }
@@ -135,7 +140,6 @@
 
         .stat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; z-index: 2; position: relative; }
         .stat-bar { background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px; flex-grow: 1; text-align: center; border: 1px dashed #555; }
-        
         .sort-btn { background: #3a3a3f; color: #00d4ff; border: 1px solid #00d4ff; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 10px; }
 
         /* 輸入區 */
@@ -168,6 +172,12 @@
             </div>
             
             <div class="total-counter" id="totalCountDisplay">📊 已報名總數：0 人</div>
+            
+            <div class="ctrl-btn-group">
+                <button class="small-ctrl-btn" onclick="toggleAllGroups(false)">📂 全部展開</button>
+                <button class="small-ctrl-btn" onclick="toggleAllGroups(true)">📁 全部摺疊</button>
+            </div>
+
             <div id="poolContainer"></div>
         </div>
 
@@ -217,12 +227,20 @@
     onValue(assignsRef, (snap) => { globalAssigns = snap.val() || {}; renderPool(); renderTeams(); });
     onValue(membersRef, () => renderPool());
 
-    // --- ✨ 摺疊切換函數 ---
+    // --- 單個摺疊切換 ---
     window.toggleStyleGroup = (styleName) => {
         const content = document.getElementById(`group-content-${styleName}`);
         const header = document.getElementById(`group-header-${styleName}`);
         content.classList.toggle('hidden');
         header.classList.toggle('collapsed');
+    };
+
+    // --- 一鍵展開/摺疊 ---
+    window.toggleAllGroups = (shouldCollapse) => {
+        const contents = document.querySelectorAll('.style-group-content');
+        const headers = document.querySelectorAll('.style-group-header');
+        contents.forEach(c => shouldCollapse ? c.classList.add('hidden') : c.classList.remove('hidden'));
+        headers.forEach(h => shouldCollapse ? h.classList.add('collapsed') : h.classList.remove('collapsed'));
     };
 
     async function renderPool() {
@@ -231,7 +249,7 @@
         const container = document.getElementById('poolContainer');
         const counter = document.getElementById('totalCountDisplay');
         
-        // 紀錄目前哪些是收起來的，防止重新渲染時狀態跑掉 (選用)
+        // 記憶目前哪些是收起來的
         const collapsedStates = {};
         document.querySelectorAll('.style-group-header').forEach(h => {
             if(h.classList.contains('collapsed')) collapsedStates[h.dataset.style] = true;
@@ -254,14 +272,22 @@
             if (members.length === 0) return;
 
             const isCollapsed = collapsedStates[styleName] || false;
+            const color = styleColors[styleName] || '#00d4ff';
 
-            // 創建標題
+            // 創建標題 (強化視覺：顏色 + 粗體)
             const header = document.createElement('div');
             header.className = `style-group-header ${isCollapsed ? 'collapsed' : ''}`;
             header.id = `group-header-${styleName}`;
             header.dataset.style = styleName;
             header.onclick = () => toggleStyleGroup(styleName);
-            header.innerHTML = `<span>${styleName}</span> <span style="font-size:0.9rem; opacity:0.7;">${members.length} 人</span>`;
+            header.style.borderLeft = `6px solid ${color}`;
+            header.style.color = color; // 直接使用職業顏色
+            header.innerHTML = `
+                <span>${styleName}</span> 
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:0.9rem; opacity:0.8;">${members.length} 人</span>
+                    <span class="arrow">▼</span>
+                </div>`;
             
             // 創建內容容器
             const contentDiv = document.createElement('div');
@@ -269,7 +295,6 @@
             contentDiv.id = `group-content-${styleName}`;
 
             members.forEach(m => {
-                const color = styleColors[m.style] || '#a29bfe';
                 const isSat = Object.values(globalAssigns).some(a => a.mid === m.id && a.target.startsWith('sat'));
                 const isSun = Object.values(globalAssigns).some(a => a.mid === m.id && a.target.startsWith('sun'));
                 
@@ -303,7 +328,7 @@
         });
     }
 
-    // (其餘功能與之前相同，確保分配、排序、刪除邏輯正常)
+    // 隊伍渲染
     function renderTeams() {
         ['sat1', 'sat2', 'sun1', 'sun2'].forEach(id => {
             const container = document.getElementById(id);
@@ -324,6 +349,7 @@
         });
     }
 
+    // 隊伍內部排序
     window.sortTeam = (targetTeam) => {
         const teamMembers = Object.entries(globalAssigns).filter(([id, a]) => a.target === targetTeam);
         teamMembers.sort((a, b) => mainStyles.indexOf(a[1].style) - mainStyles.indexOf(b[1].style) || b[1].power - a[1].power);
@@ -355,7 +381,7 @@
 
     window.unassign = (aid) => remove(ref(db, `assigns/${aid}`));
     window.deleteMember = (mid) => { 
-        if(!isAdmin) { const p = prompt("密碼："); if(p==="0404") isAdmin=true; else return alert("無權限"); }
+        if(!isAdmin) { const p = prompt("管理密碼："); if(p==="0404") isAdmin=true; else return alert("無權限"); }
         if(confirm("刪除此成員？")) remove(ref(db, `members/${mid}`)); 
     };
     document.getElementById('resetBtn').onclick = () => { if(confirm("清空目前所有隊伍分配？")) set(assignsRef, null); };
