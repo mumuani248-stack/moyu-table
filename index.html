@@ -44,10 +44,9 @@
             flex-direction: column;
         }
 
-        /* 總報名人數統計樣式 */
         .total-counter {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid #444;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid #00d4ff;
             border-radius: 6px;
             padding: 8px;
             margin-top: 10px;
@@ -100,7 +99,6 @@
         .card .power-text { color: #bbbbbb; font-size: 0.8rem; opacity: 0.9; }
         .card .style-tag { font-size: 0.95rem; font-weight: 800; }
 
-        /* 隊伍看板 */
         .board { flex-grow: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         .column { 
             position: relative; background: #252529; border-radius: 12px; padding: 12px; min-height: 450px; 
@@ -170,7 +168,7 @@
     <div class="export-section">
         <button style="background: #2d6a4f; color: white;" id="exportBtn">📋 輸出配置</button>
         <button style="background: #444; color: #ccc;" id="resetBtn">🗑️ 清空分配</button>
-        <button style="background: #780000; color: #fff;" id="clearAllBtn">🧨 全部清空</button>
+        <button style="background: #780000; color: #fff;" id="clearAllBtn">🧨 全部清空名冊</button>
         <textarea id="output" readonly></textarea>
     </div>
 </div>
@@ -196,11 +194,23 @@
     const assignsRef = ref(db, 'assigns');
 
     const mainStyles = ['九九', '無名', '威威', '霖霖', '玉玉', '雙刀'];
-    const styleColors = { 
-        '九九': '#4d94ff', '無名': '#33ccff', '威威': '#ffaa33', '霖霖': '#44ff44', '玉玉': '#00cc66', '雙刀': '#cc66ff' 
-    };
+    const styleColors = { '九九': '#4d94ff', '無名': '#33ccff', '威威': '#ffaa33', '霖霖': '#44ff44', '玉玉': '#00cc66', '雙刀': '#cc66ff' };
 
     let globalAssigns = {};
+    let isAdmin = false;
+
+    // --- 權限檢查函數 ---
+    const checkAdmin = () => {
+        if (isAdmin) return true;
+        const password = prompt("管理者密碼：");
+        if (password === "0404") {
+            isAdmin = true;
+            return true;
+        }
+        alert("密碼錯誤，無權限進行此操作。");
+        return false;
+    };
+
     onValue(assignsRef, (snap) => { globalAssigns = snap.val() || {}; renderPool(); renderTeams(); });
     onValue(membersRef, () => renderPool());
 
@@ -210,16 +220,9 @@
         const container = document.getElementById('poolContainer');
         const counter = document.getElementById('totalCountDisplay');
         container.innerHTML = '';
-        
-        if (!data) {
-            counter.innerText = "📊 已報名總數：0 人";
-            return;
-        }
+        if (!data) { counter.innerText = "📊 已報名總數：0 人"; return; }
 
-        // 更新總報名人數
-        const totalCount = Object.keys(data).length;
-        counter.innerText = `📊 已報名總數：${totalCount} 人`;
-
+        counter.innerText = `📊 已報名總數：${Object.keys(data).length} 人`;
         const groups = { '其他': [] };
         mainStyles.forEach(s => groups[s] = []);
         for (let id in data) {
@@ -240,12 +243,9 @@
                 const color = styleColors[m.style] || '#a29bfe';
                 const isSat = Object.values(globalAssigns).some(a => a.mid === m.id && a.target.startsWith('sat'));
                 const isSun = Object.values(globalAssigns).some(a => a.mid === m.id && a.target.startsWith('sun'));
-
                 const card = document.createElement('div');
-                card.className = "card";
-                card.style.borderLeftColor = color;
-                card.style.borderBottomColor = color;
-                
+                card.className = "card"; card.style.borderLeftColor = color; card.style.borderBottomColor = color;
+
                 let btns = '';
                 if(m.days.includes('六')) {
                     btns += `<button class="btn-sat ${isSat?'btn-assigned':''}" onclick="assign('${m.id}','sat1')">六1</button>`;
@@ -270,33 +270,24 @@
         });
     }
 
-    // 其餘渲染隊伍與功能邏輯維持...
     function renderTeams() {
-        const ids = ['sat1', 'sat2', 'sun1', 'sun2'];
-        const stats = { sat1:0, sat2:0, sun1:0, sun2:0 }, counts = { sat1:0, sat2:0, sun1:0, sun2:0 };
-        ids.forEach(id => document.getElementById(id).innerHTML = '');
-
-        for (let aid in globalAssigns) {
-            const a = globalAssigns[aid];
-            const container = document.getElementById(a.target);
-            if (!container) continue;
-            stats[a.target] += a.power; counts[a.target]++;
-            
-            const color = styleColors[a.style] || '#a29bfe';
-            const card = document.createElement('div');
-            card.className = "card";
-            card.style.borderLeftColor = color; card.style.borderBottomColor = color;
-            card.innerHTML = `
-                <button class="del-btn" onclick="unassign('${aid}')">✕</button>
-                <div class="card-content">
-                    <span class="name">${a.name}</span>
-                    <span class="power-text">${a.power.toLocaleString()}</span>
-                    <span class="style-tag" style="color:${color}">| ${a.style}</span>
-                </div>
-            `;
-            container.appendChild(card);
-        }
-        ids.forEach(id => document.getElementById(`stat-${id}`).innerText = `戰力: ${stats[id].toLocaleString()} | ${counts[id]} 人`);
+        ['sat1', 'sat2', 'sun1', 'sun2'].forEach(id => {
+            const container = document.getElementById(id);
+            container.innerHTML = '';
+            let totalPower = 0, count = 0;
+            for (let aid in globalAssigns) {
+                const a = globalAssigns[aid];
+                if (a.target === id) {
+                    totalPower += a.power; count++;
+                    const color = styleColors[a.style] || '#a29bfe';
+                    const card = document.createElement('div');
+                    card.className = "card"; card.style.borderLeftColor = color; card.style.borderBottomColor = color;
+                    card.innerHTML = `<button class="del-btn" onclick="unassign('${aid}')">✕</button><div class="card-content"><span class="name">${a.name}</span><span class="power-text">${a.power.toLocaleString()}</span><span class="style-tag" style="color:${color}">| ${a.style}</span></div>`;
+                    container.appendChild(card);
+                }
+            }
+            document.getElementById(`stat-${id}`).innerText = `戰力: ${totalPower.toLocaleString()} | ${count} 人`;
+        });
     }
 
     window.sortTeam = (targetTeam) => {
@@ -329,15 +320,32 @@
     };
 
     window.unassign = (aid) => remove(ref(db, `assigns/${aid}`));
-    window.deleteMember = (mid) => { if(confirm("確定刪除？")) remove(ref(db, `members/${mid}`)); };
-    document.getElementById('resetBtn').onclick = () => { if(confirm("清空分配？")) set(assignsRef, null); };
-    document.getElementById('clearAllBtn').onclick = () => { if(confirm("全部清空？")) { set(membersRef, null); set(assignsRef, null); } };
+    
+    // --- 受密碼保護的操作 ---
+    window.deleteMember = (mid) => { 
+        if(checkAdmin() && confirm("確定從名冊中刪除此成員？")) {
+            remove(ref(db, `members/${mid}`));
+            for(let aid in globalAssigns) if(globalAssigns[aid].mid === mid) remove(ref(db, `assigns/${aid}`));
+        } 
+    };
+    
+    document.getElementById('resetBtn').onclick = () => { 
+        if(checkAdmin() && confirm("確定清空所有隊伍分配？")) set(assignsRef, null); 
+    };
+    
+    document.getElementById('clearAllBtn').onclick = () => { 
+        if(checkAdmin() && confirm("⚠️ 警告：這將清空【所有成員名冊】與【分配紀錄】，確定嗎？")) { 
+            set(membersRef, null); set(assignsRef, null); 
+        } 
+    };
+
     document.getElementById('exportBtn').onclick = () => {
-        let res = "🌸 戰配置結果\n";
+        let res = "🌸 墨雨笙花 百業戰配置\n";
         ['sat1', 'sat2', 'sun1', 'sun2'].forEach(id => {
-            res += `\n【 ${id} 】\n`;
+            const title = document.getElementById('col-'+id).querySelector('h2').innerText;
+            res += `\n【 ${title} 】\n`;
             document.getElementById(id).querySelectorAll('.card').forEach(c => {
-                res += `- ${c.querySelector('.name').innerText} (${c.querySelector('.style-tag').innerText})\n`;
+                res += `- ${c.querySelector('.name').innerText} (${c.querySelector('.style-tag').innerText.replace('| ','')})\n`;
             });
         });
         const out = document.getElementById('output'); out.value = res; out.style.display = 'block'; out.select();
