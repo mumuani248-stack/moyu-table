@@ -25,9 +25,9 @@
         h1 { text-align: center; color: #fff; margin-bottom: 20px; letter-spacing: 2px; font-size: 1.8rem; }
         .main-layout { display: flex; gap: 15px; align-items: flex-start; }
         
-        /* --- 待命成員容器 (左側面板) --- */
+        /* --- 待命成員容器 --- */
         .pool-section { 
-            width: 280px; /* 稍微加寬以容納分類 */
+            width: 280px; 
             background: #252529; 
             padding: 15px; 
             border-radius: 12px; 
@@ -40,7 +40,6 @@
             flex-direction: column;
         }
 
-        /* 分類標題樣式 */
         .style-group-header {
             font-size: 0.85rem;
             color: #aaa;
@@ -52,7 +51,7 @@
             justify-content: space-between;
         }
 
-        /* --- 成員卡片樣式 (維持原本優點) --- */
+        /* --- 成員卡片 --- */
         .card { 
             background: #2d2d32; 
             border-radius: 4px; 
@@ -83,13 +82,29 @@
 
         @keyframes softScan { 0% { left: -150%; } 100% { left: 150%; } }
 
+        /* 文字內容排版 */
         .card-content {
-            display: flex; align-items: baseline; gap: 6px; font-size: 0.9rem;
-            white-space: nowrap; overflow: hidden; position: relative; z-index: 2; margin-bottom: 6px;
+            display: flex; 
+            align-items: center; /* 改為置中對齊，讓大小字看起來更和諧 */
+            gap: 8px; 
+            font-size: 0.95rem;
+            white-space: nowrap; 
+            overflow: hidden; 
+            position: relative; 
+            z-index: 2; 
+            margin-bottom: 6px;
         }
 
         .card .name { font-weight: bold; color: #ffffff; }
-        .card .info-text { color: #bbbbbb; font-size: 0.75rem; }
+        .card .power-text { color: #bbbbbb; font-size: 0.75rem; }
+
+        /* --- 重點：流派文字特效 --- */
+        .card .style-tag { 
+            font-size: 0.9rem; /* 字體大一點點 */
+            font-weight: 800;  /* 變粗 */
+            letter-spacing: 1px;
+            /* 顏色與發光會由 JS 動態注入 */
+        }
 
         /* 隊伍看板區 */
         .board { flex-grow: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
@@ -117,7 +132,6 @@
         .btn-assigned { background: #444 !important; color: #888 !important; }
         .del-btn { position: absolute; top: 4px; right: 4px; background: rgba(255, 77, 77, 0.7); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; display: flex; align-items: center; justify-content: center; z-index: 10; }
         
-        /* 輸入框修正 */
         .input-group input { width: 100%; padding: 8px; margin-bottom: 6px; border: 1px solid #444; border-radius: 4px; background: #121214; color: #fff; font-size: 0.85rem; display: block; }
         .day-check-group { margin: 8px 0; display: flex; justify-content: center; gap: 10px; }
         .day-check { display: flex; align-items: center; font-size: 0.8rem; cursor: pointer; gap: 4px; }
@@ -189,15 +203,15 @@
 
     const mainStyles = ['九九', '無名', '威威', '霖霖', '玉玉', '雙刀'];
     const styleColors = { 
-        '九九': { main: '#4d94ff', glow: 'rgba(77, 148, 255, 0.4)' }, 
-        '無名': { main: '#33ccff', glow: 'rgba(51, 204, 255, 0.4)' }, 
-        '威威': { main: '#ffaa33', glow: 'rgba(255, 170, 51, 0.4)' }, 
-        '霖霖': { main: '#44ff44', glow: 'rgba(68, 255, 68, 0.4)' }, 
-        '玉玉': { main: '#00cc66', glow: 'rgba(0, 204, 102, 0.4)' }, 
-        '雙刀': { main: '#cc66ff', glow: 'rgba(204, 102, 255, 0.4)' } 
+        '九九': { main: '#4d94ff', glow: 'rgba(77, 148, 255, 0.5)' }, 
+        '無名': { main: '#33ccff', glow: 'rgba(51, 204, 255, 0.5)' }, 
+        '威威': { main: '#ffaa33', glow: 'rgba(255, 170, 51, 0.5)' }, 
+        '霖霖': { main: '#44ff44', glow: 'rgba(68, 255, 68, 0.5)' }, 
+        '玉玉': { main: '#00cc66', glow: 'rgba(0, 204, 102, 0.5)' }, 
+        '雙刀': { main: '#cc66ff', glow: 'rgba(204, 102, 255, 0.5)' } 
     };
 
-    const getColors = (style) => styleColors[style] || { main: '#a29bfe', glow: 'rgba(162, 155, 254, 0.3)' };
+    const getColors = (style) => styleColors[style] || { main: '#a29bfe', glow: 'rgba(162, 155, 254, 0.4)' };
     let globalAssigns = {};
 
     onValue(assignsRef, (snapshot) => {
@@ -214,17 +228,14 @@
         container.innerHTML = '';
         if (!data) return;
 
-        // --- 分類邏輯 ---
         const groups = { '其他': [] };
         mainStyles.forEach(s => groups[s] = []);
-
         for (let id in data) {
             const m = data[id];
             const targetGroup = mainStyles.includes(m.style) ? m.style : '其他';
             groups[targetGroup].push({ id, ...m });
         }
 
-        // --- 渲染分類 ---
         const sortedGroups = [...mainStyles, '其他'];
         sortedGroups.forEach(styleName => {
             const members = groups[styleName];
@@ -259,7 +270,8 @@
                     <button class="del-btn" onclick="deleteMember('${m.id}')">✕</button>
                     <div class="card-content">
                         <span class="name">${m.name}</span>
-                        <span class="info-text">${m.power.toLocaleString()} | ${m.style}</span>
+                        <span class="power-text">${m.power.toLocaleString()}</span>
+                        <span class="style-tag" style="color: ${colors.main}; text-shadow: 0 0 5px ${colors.glow};">| ${m.style}</span>
                     </div>
                     <div class="assign-btns">${btns}</div>
                 `;
@@ -289,7 +301,8 @@
                 <button class="del-btn" onclick="unassign('${aid}')">✕</button>
                 <div class="card-content">
                     <span class="name">${a.name}</span>
-                    <span class="info-text">${a.power.toLocaleString()} | ${a.style}</span>
+                    <span class="power-text">${a.power.toLocaleString()}</span>
+                    <span class="style-tag" style="color: ${colors.main}; text-shadow: 0 0 5px ${colors.glow};">| ${a.style}</span>
                 </div>
             `;
             container.appendChild(card);
@@ -332,7 +345,7 @@
         ['sat1', 'sat2', 'sun1', 'sun2'].forEach(id => {
             res += `\n【 ${document.getElementById('col-'+id).querySelector('h2').innerText} 】\n`;
             document.getElementById(id).querySelectorAll('.card').forEach(c => {
-                res += `- ${c.querySelector('.name').innerText} (${c.querySelector('.info-text').innerText})\n`;
+                res += `- ${c.querySelector('.name').innerText} (${c.querySelector('.power-text').innerText} | ${c.querySelector('.style-tag').innerText.replace('| ','')})\n`;
             });
         });
         const out = document.getElementById('output'); out.value = res; out.style.display = 'block'; out.select();
