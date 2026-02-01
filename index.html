@@ -7,10 +7,9 @@
         :root {
             --sat-color: #ff4d6d;
             --sun-color: #4361ee;
-            --pool-color: #a29bfe; /* 名單池專屬銀紫色 */
+            --pool-color: #a29bfe; 
             --glow-speed: 3s;
             --bg-dark: #1a1a1e;
-            --card-dark: rgba(45, 45, 50, 0.9);
         }
 
         body { 
@@ -21,79 +20,77 @@
         }
         
         .container { max-width: 1400px; margin: auto; }
-        
         h1 { text-align: center; color: #fff; margin-bottom: 20px; letter-spacing: 2px; font-size: 1.8rem; }
-
         .main-layout { display: flex; gap: 15px; align-items: flex-start; }
         
-        /* --- 成員名單池：掃描線特效實作 --- */
+        /* --- 待命成員容器 --- */
         .pool-section { 
             width: 200px; 
-            position: relative;
             background: #252529; 
             padding: 12px; 
             border-radius: 12px; 
             position: sticky; 
             top: 10px; 
-            overflow: hidden; /* 隱藏超出的掃描線 */
-            z-index: 1;
+            border: 1px solid #444;
             display: flex;
             flex-direction: column;
-            border: 1px solid #444;
         }
 
-        /* 掃描線光束 */
-        .pool-section::after {
+        /* --- 單個成員卡片：內置掃光特效 --- */
+        .card { 
+            background: #2d2d32; 
+            border-radius: 6px; 
+            padding: 8px 10px; 
+            margin-bottom: 8px; 
+            border-left: 4px solid #007bff; 
+            position: relative; 
+            border: 1px solid #3d3d42;
+            display: flex; 
+            flex-direction: column;
+            gap: 4px;
+            overflow: hidden; /* 必備：隱藏卡片內的掃光軌跡 */
+            transition: transform 0.2s;
+        }
+
+        /* 卡片內的掃描線動畫 */
+        .card::after {
             content: "";
             position: absolute;
-            top: -100%;
-            left: 0;
-            width: 100%;
+            top: -150%;
+            left: -50%;
+            width: 200%;
             height: 100%;
+            /* 調整為斜向掃光，更具動態感 */
             background: linear-gradient(
-                transparent, 
-                rgba(162, 155, 254, 0.05) 40%, 
-                rgba(162, 155, 254, 0.2) 50%, 
-                rgba(162, 155, 254, 0.05) 60%, 
+                to bottom,
+                transparent,
+                rgba(255, 255, 255, 0.02) 45%,
+                rgba(255, 255, 255, 0.15) 50%,
+                rgba(255, 255, 255, 0.02) 55%,
                 transparent
             );
-            animation: scanLine 4s infinite linear;
-            pointer-events: none; /* 防止遮擋點擊 */
-            z-index: 5;
+            transform: rotate(-20deg);
+            animation: cardScan 3.5s infinite ease-in-out;
+            pointer-events: none;
+            z-index: 1;
         }
 
-        @keyframes scanLine {
-            0% { top: -100%; }
-            100% { top: 100%; }
+        @keyframes cardScan {
+            0% { top: -150%; }
+            100% { top: 150%; }
         }
 
-        /* 確保內容在掃描線之上 */
-        .input-group, #poolList {
-            position: relative;
-            z-index: 10;
-        }
+        .card:hover { background: #35353b; transform: translateX(3px); }
+        .card p { margin: 0; white-space: nowrap; font-size: 0.9rem; position: relative; z-index: 2; }
+        .card .name { font-weight: bold; }
+        .card .info-text { color: #aaa; font-size: 0.8rem; }
 
+        /* 其餘 UI 保持不變 */
         .board { flex-grow: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .day-check-group { margin: 10px 0; display: flex; justify-content: center; gap: 12px; }
+        .day-check { display: flex; align-items: center; font-size: 0.85rem; cursor: pointer; gap: 4px; }
 
-        /* --- 修正手機版勾選框歪掉的問題 --- */
-        .day-check-group { 
-            margin: 10px 0; 
-            display: flex; 
-            justify-content: center; 
-            gap: 12px; 
-            flex-wrap: nowrap; /* 強制不換行 */
-        }
-        .day-check { 
-            display: flex; 
-            align-items: center; 
-            font-size: 0.85rem; 
-            color: #ccc; 
-            cursor: pointer; 
-            white-space: nowrap; 
-            gap: 4px;
-        }
-
-        /* 隊伍容器流光效果 */
+        /* 隊伍流光效果 */
         .column { 
             position: relative; background: #252529; border-radius: 12px; padding: 12px; min-height: 400px; 
             display: flex; flex-direction: column; overflow: hidden; z-index: 1;
@@ -106,66 +103,29 @@
         .column.sat::before { background: conic-gradient(transparent, transparent, transparent, var(--sat-color)); }
         .column.sun::before { background: conic-gradient(transparent, transparent, transparent, var(--sun-color)); }
         .column::after { content: ""; position: absolute; inset: 2px; background: #252529; border-radius: 10px; z-index: -1; }
-
         @keyframes rotate { 100% { transform: rotate(360deg); } }
 
-        .column h2 { text-align: center; font-size: 1.1rem; margin-bottom: 8px; }
-        .stat-bar { 
-            background: rgba(255,255,255,0.05); text-align: center; font-size: 0.9rem; 
-            padding: 5px; border-radius: 5px; margin-bottom: 10px; border: 1px dashed #555; 
-        }
-        
+        .stat-bar { background: rgba(255,255,255,0.05); text-align: center; font-size: 0.9rem; padding: 5px; border-radius: 5px; margin-bottom: 10px; border: 1px dashed #555; }
         .item-list { flex-grow: 1; }
-
-        /* 卡片樣式 */
-        .card { 
-            background: #2d2d32; border-radius: 4px; padding: 6px 10px; margin-bottom: 6px; 
-            border-left: 4px solid #007bff; position: relative; border: 1px solid #3d3d42;
-            display: flex; align-items: center; gap: 8px;
-            transition: transform 0.2s;
-        }
-        .card:hover { background: #35353b; transform: translateX(3px); }
-        .card p { margin: 0; white-space: nowrap; font-size: 0.9rem; }
-        .card .name { font-weight: bold; min-width: 60px; overflow: hidden; text-overflow: ellipsis; }
-        .card .info-text { color: #aaa; flex-grow: 1; }
-
-        #poolList .card { flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px; }
-        #poolList .info-text { font-size: 0.8rem; }
-
-        button { cursor: pointer; border: none; transition: 0.2s; }
-        button:active { transform: scale(0.95); }
-        .assign-btns { display: flex; gap: 3px; width: 100%; }
-        .assign-btns button { padding: 3px 0; font-size: 11px; border-radius: 3px; color: white; flex: 1; font-weight: bold; }
         
+        button { cursor: pointer; border: none; transition: 0.2s; }
+        .assign-btns { display: flex; gap: 3px; width: 100%; position: relative; z-index: 5; }
+        .assign-btns button { padding: 3px 0; font-size: 11px; border-radius: 3px; color: white; flex: 1; font-weight: bold; }
         .btn-sat { background: #ff4d6d; }
         .btn-sun { background: #4361ee; }
         .btn-assigned { background: #444 !important; color: #888 !important; }
-
-        .del-btn {
-            position: absolute; top: 50%; right: 8px; transform: translateY(-50%);
-            background: rgba(255, 77, 77, 0.6); color: white; border-radius: 50%;
-            width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center;
-            z-index: 20;
-        }
+        .del-btn { position: absolute; top: 5px; right: 5px; background: rgba(255, 77, 77, 0.6); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center; z-index: 10; }
         
-        .input-group input { 
-            width: 100%; padding: 8px; margin-bottom: 6px; box-sizing: border-box;
-            border: 1px solid #444; border-radius: 4px; background: #121214; color: #fff; font-size: 0.85rem; 
-        }
+        .input-group input { width: 100%; padding: 8px; margin-bottom: 6px; box-sizing: border-box; border: 1px solid #444; border-radius: 4px; background: #121214; color: #fff; font-size: 0.85rem; }
         #addBtn { width: 100%; background: #4e4e54; color: white; padding: 10px; border-radius: 4px; font-weight: bold; }
-
         .export-section { margin-top: 20px; text-align: center; padding-bottom: 40px; }
-        .export-section button { padding: 10px 20px; border-radius: 4px; font-weight: bold; margin: 0 5px; }
-        
         #output { width: 80%; height: 120px; display: none; margin: 15px auto; background: #121214; color: #00ff00; padding: 10px; }
-
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>🌸 墨雨笙花 · 百業戰配置</h1>
-    
     <div class="main-layout">
         <div class="pool-section">
             <div class="input-group">
@@ -187,26 +147,10 @@
         </div>
 
         <div class="board">
-            <div class="column sat" id="col-sat1">
-                <h2>禮拜六 一隊</h2>
-                <div class="stat-bar" id="stat-sat1">0 | 0人</div>
-                <div class="item-list" id="sat1"></div>
-            </div>
-            <div class="column sat" id="col-sat2">
-                <h2>禮拜六 二隊</h2>
-                <div class="stat-bar" id="stat-sat2">0 | 0人</div>
-                <div class="item-list" id="sat2"></div>
-            </div>
-            <div class="column sun" id="col-sun1">
-                <h2>禮拜日 一隊</h2>
-                <div class="stat-bar" id="stat-sun1">0 | 0人</div>
-                <div class="item-list" id="sun1"></div>
-            </div>
-            <div class="column sun" id="col-sun2">
-                <h2>禮拜日 二隊</h2>
-                <div class="stat-bar" id="stat-sun2">0 | 0人</div>
-                <div class="item-list" id="sun2"></div>
-            </div>
+            <div class="column sat" id="col-sat1"><h2>禮拜六 一隊</h2><div class="stat-bar" id="stat-sat1">0 | 0人</div><div class="item-list" id="sat1"></div></div>
+            <div class="column sat" id="col-sat2"><h2>禮拜六 二隊</h2><div class="stat-bar" id="stat-sat2">0 | 0人</div><div class="item-list" id="sat2"></div></div>
+            <div class="column sun" id="col-sun1"><h2>禮拜日 一隊</h2><div class="stat-bar" id="stat-sun1">0 | 0人</div><div class="item-list" id="sun1"></div></div>
+            <div class="column sun" id="col-sun2"><h2>禮拜日 二隊</h2><div class="stat-bar" id="stat-sun2">0 | 0人</div><div class="item-list" id="sun2"></div></div>
         </div>
     </div>
 
@@ -294,7 +238,7 @@
                 }
 
                 card.innerHTML = `
-                    <button class="del-btn" style="top:5px; transform:none;" onclick="deleteMember('${id}')">✕</button>
+                    <button class="del-btn" onclick="deleteMember('${id}')">✕</button>
                     <p class="name">${m.name}</p>
                     <p class="info-text">戰:${m.power.toLocaleString()} | ${m.style}</p>
                     <div class="assign-btns">${btns}</div>
@@ -362,12 +306,10 @@
     };
 
     document.getElementById('clearAllBtn').onclick = () => {
-        if(checkAdmin()) {
-            if(confirm("⚠️ 注意！這會刪除『整個名冊』和『所有隊伍』！\n確定要執行毀滅性清空嗎？")) {
-                set(membersRef, null);
-                set(assignsRef, null);
-                alert("已全部清空！");
-            }
+        if(checkAdmin() && confirm("⚠️ 注意！這會刪除『整個名冊』和『所有隊伍』！\n確定要執行毀滅性清空嗎？")) {
+            set(membersRef, null);
+            set(assignsRef, null);
+            alert("已全部清空！");
         }
     };
 
