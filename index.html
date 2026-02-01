@@ -51,16 +51,16 @@
             justify-content: space-between;
         }
 
-        /* --- 成員卡片：加入下邊框與對齊修正 --- */
+        /* --- 成員卡片：優化對齊與邊框位置 --- */
         .card { 
             background: #2d2d32; 
             border-radius: 4px; 
-            padding: 10px 12px; 
+            /* 調整內距：縮小 bottom (從 10px 降到 6px) 讓文字靠近底線 */
+            padding: 8px 12px 6px 12px; 
             margin-bottom: 8px; 
             
-            /* 邊框設定：左與下強化 */
             border-left: 6px solid #007bff; 
-            border-bottom: 3px solid #007bff; /* 下邊框職業底色 */
+            border-bottom: 3px solid #007bff; 
             border-top: 1px solid #3d3d42;
             border-right: 1px solid #3d3d42;
             
@@ -71,7 +71,6 @@
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        /* 柔和橫向掃光 */
         .card::after {
             content: "";
             position: absolute;
@@ -85,17 +84,17 @@
 
         @keyframes softScan { 0% { left: -150%; } 100% { left: 150%; } }
 
-        /* 文字內容：完美垂直對齊 */
+        /* 文字內容：完美垂直居中 */
         .card-content {
             display: flex; 
-            align-items: center; /* 關鍵：強制上下居中對齊 */
-            gap: 10px; 
+            align-items: center; 
+            gap: 12px; /* 稍微增加間距避免太擠 */
             font-size: 0.95rem;
             white-space: nowrap; 
             overflow: hidden; 
             position: relative; 
             z-index: 2; 
-            margin-bottom: 8px;
+            margin-bottom: 6px; /* 控制文字與下方按鈕/邊界的距離 */
         }
 
         .card .name { font-weight: bold; color: #ffffff; font-size: 1rem; }
@@ -109,7 +108,7 @@
 
         .card:hover { 
             background: #35353b; 
-            transform: translateY(-2px); /* 改為向上微浮，配合底線更有動感 */
+            transform: translateY(-2px);
         }
 
         /* 隊伍看板區 */
@@ -260,7 +259,7 @@
                 const card = document.createElement('div');
                 card.className = "card";
                 card.style.borderLeftColor = colors.main;
-                card.style.borderBottomColor = colors.main; // 動態下邊框色
+                card.style.borderBottomColor = colors.main;
                 card.style.boxShadow = `-5px 0 10px ${colors.glow}`;
 
                 let btns = '';
@@ -302,7 +301,7 @@
             card.className = "card";
             const colors = getColors(a.style);
             card.style.borderLeftColor = colors.main;
-            card.style.borderBottomColor = colors.main; // 隊伍卡片也同步
+            card.style.borderBottomColor = colors.main;
             card.style.boxShadow = `-5px 0 10px ${colors.glow}`;
             
             card.innerHTML = `
@@ -320,7 +319,7 @@
         });
     }
 
-    // --- 其餘邏輯維持不變 ---
+    // --- 其餘 Firebase 邏輯維持不變 ---
     let isAdmin = false;
     const checkAdmin = () => { if (isAdmin) return true; const password = prompt("管理者密碼："); if (password === "0404") { isAdmin = true; return true; } return false; };
 
