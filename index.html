@@ -255,7 +255,7 @@
             header.style.color = color;
             
             // ✨ 在標題注入剩餘人數提示
-            const tipHtml = unassignedCount > 0 ? `<span class="unassigned-tip"> (剩餘 ${unassignedCount} 人未待分配!)</span>` : '';
+            const tipHtml = unassignedCount > 0 ? `<span class="unassigned-tip"> (剩餘 ${unassignedCount} 人未安排)</span>` : '';
             header.innerHTML = `<span>${styleName}${tipHtml}</span> <div style="display:flex; align-items:center; gap:10px;"><span style="font-size:0.9rem; opacity:0.8;">${members.length} 人</span><span class="arrow">▼</span></div>`;
             
             const contentDiv = document.createElement('div');
