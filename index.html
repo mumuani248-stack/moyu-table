@@ -25,7 +25,7 @@
         
         /* --- 待命成員容器 --- */
         .pool-section { 
-            width: 220px; /* 稍微調整寬度以容納單行文字 */
+            width: 230px; 
             background: #252529; 
             padding: 12px; 
             border-radius: 12px; 
@@ -36,22 +36,26 @@
             flex-direction: column;
         }
 
-        /* --- 成員卡片：窄版 + 單行文字 + 柔和掃光 --- */
+        /* --- 成員卡片：邊緣色彩強化 + 單行文字 + 柔和掃光 --- */
         .card { 
             background: #2d2d32; 
             border-radius: 4px; 
-            padding: 6px 8px; 
-            margin-bottom: 6px; 
-            border-left: 4px solid #007bff; 
+            padding: 8px 10px; 
+            margin-bottom: 8px; 
+            /* 左側邊色條加粗 */
+            border-left: 6px solid #007bff; 
+            border-top: 1px solid #3d3d42;
+            border-right: 1px solid #3d3d42;
+            border-bottom: 1px solid #3d3d42;
+            
             position: relative; 
-            border: 1px solid #3d3d42;
             display: flex; 
-            align-items: center; /* 垂直置中 */
+            flex-direction: column;
             overflow: hidden; 
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        /* 柔和橫向掃光 */
+        /* 柔和橫向無縫掃光 */
         .card::after {
             content: "";
             position: absolute;
@@ -62,13 +66,13 @@
             background: linear-gradient(
                 90deg, 
                 transparent, 
-                rgba(255, 255, 255, 0.01) 30%, 
-                rgba(255, 255, 255, 0.1) 50%, 
-                rgba(255, 255, 255, 0.01) 70%, 
+                rgba(255, 255, 255, 0.01) 20%, 
+                rgba(255, 255, 255, 0.08) 50%, 
+                rgba(255, 255, 255, 0.01) 80%, 
                 transparent
             );
-            transform: skewX(-20deg);
-            animation: softScan 4s infinite linear;
+            transform: skewX(-25deg);
+            animation: softScan 5s infinite linear;
             pointer-events: none;
             z-index: 1;
         }
@@ -78,26 +82,28 @@
             100% { left: 150%; }
         }
 
-        /* 強制文字單行顯示 */
+        /* 文字內容：名稱 戰力 | 流派 */
         .card-content {
             display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.85rem;
+            align-items: baseline;
+            gap: 6px;
+            font-size: 0.9rem;
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis;
             position: relative;
             z-index: 2;
-            flex-grow: 1;
+            margin-bottom: 6px;
         }
 
-        .card .name { font-weight: bold; color: #fff; }
-        .card .info-text { color: #aaa; font-size: 0.75rem; }
+        .card .name { font-weight: bold; color: #ffffff; }
+        .card .info-text { color: #bbbbbb; font-size: 0.78rem; letter-spacing: 0.5px; }
 
-        .card:hover { background: #35353b; transform: translateX(3px); }
+        .card:hover { 
+            background: #35353b; 
+            transform: translateX(3px); 
+        }
 
-        /* 其餘區塊設定 */
+        /* 其他布局 */
         .board { flex-grow: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         .day-check-group { margin: 10px 0; display: flex; justify-content: center; gap: 8px; }
         .day-check { display: flex; align-items: center; font-size: 0.8rem; cursor: pointer; gap: 3px; }
@@ -106,6 +112,7 @@
             position: relative; background: #252529; border-radius: 12px; padding: 12px; min-height: 400px; 
             display: flex; flex-direction: column; overflow: hidden; z-index: 1;
         }
+        /* 隊伍流光 */
         .column::before {
             content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
             background: conic-gradient(transparent, transparent, transparent, #007bff);
@@ -120,18 +127,17 @@
         .item-list { flex-grow: 1; }
         
         button { cursor: pointer; border: none; transition: 0.2s; }
-        .assign-btns { display: flex; gap: 2px; margin-top: 4px; z-index: 5; }
-        .assign-btns button { padding: 2px 4px; font-size: 10px; border-radius: 3px; color: white; font-weight: bold; }
+        .assign-btns { display: flex; gap: 4px; z-index: 5; }
+        .assign-btns button { padding: 2px 8px; font-size: 10px; border-radius: 3px; color: white; font-weight: bold; }
         .btn-sat { background: #ff4d6d; }
         .btn-sun { background: #4361ee; }
         .btn-assigned { background: #444 !important; color: #888 !important; }
-        .del-btn { position: absolute; top: 2px; right: 2px; background: rgba(255, 77, 77, 0.6); color: white; border-radius: 50%; width: 14px; height: 14px; font-size: 9px; display: flex; align-items: center; justify-content: center; z-index: 10; }
+        .del-btn { position: absolute; top: 4px; right: 4px; background: rgba(255, 77, 77, 0.7); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; display: flex; align-items: center; justify-content: center; z-index: 10; }
         
-        /* 輸入框微調 */
-        .input-group input { width: 100%; padding: 6px; margin-bottom: 5px; border: 1px solid #444; border-radius: 4px; background: #121214; color: #fff; font-size: 0.8rem; }
-        #addBtn { width: 100%; background: #4e4e54; color: white; padding: 8px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
+        .input-group input { width: 100%; padding: 7px; margin-bottom: 6px; border: 1px solid #444; border-radius: 4px; background: #121214; color: #fff; font-size: 0.85rem; }
+        #addBtn { width: 100%; background: #4e4e54; color: white; padding: 9px; border-radius: 4px; font-weight: bold; }
         .export-section { margin-top: 20px; text-align: center; padding-bottom: 40px; }
-        #output { width: 80%; height: 120px; display: none; margin: 15px auto; background: #121214; color: #00ff00; padding: 10px; }
+        #output { width: 80%; height: 120px; display: none; margin: 15px auto; background: #121214; color: #00ff00; padding: 10px; border: 1px solid #333; }
     </style>
 </head>
 <body>
@@ -154,7 +160,7 @@
                 </div>
                 <button id="addBtn">✨ 加入成員</button>
             </div>
-            <hr style="border: 0.5px solid #333; margin: 10px 0;">
+            <hr style="border: 0.5px solid #333; margin: 12px 0;">
             <div id="poolList"></div>
         </div>
 
@@ -165,6 +171,7 @@
             <div class="column sun" id="col-sun2"><h2>禮拜日 二隊</h2><div class="stat-bar" id="stat-sun2">0 | 0人</div><div class="item-list" id="sun2"></div></div>
         </div>
     </div>
+
     <div class="export-section">
         <button style="background: #2d6a4f; color: white;" id="exportBtn">📋 輸出配置</button>
         <button style="background: #444; color: #ccc;" id="resetBtn">🗑️ 清空分配</button>
@@ -177,6 +184,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, push, onValue, remove, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+    // Firebase 配置保持不變
     const firebaseConfig = {
         apiKey: "AIzaSyAV08lkRKtqclvDoju-cSmmN85fAM5fD-E",
         authDomain: "project1-efdf0.firebaseapp.com",
@@ -202,15 +210,15 @@
     };
 
     const styleColors = { 
-        '九九': { main: '#4d94ff', light: 'rgba(0, 100, 255, 0.1)' }, 
-        '無名': { main: '#33ccff', light: 'rgba(0, 204, 255, 0.08)' }, 
-        '威威': { main: '#ffaa33', light: 'rgba(255, 170, 50, 0.08)' }, 
-        '霖霖': { main: '#44ff44', light: 'rgba(0, 255, 0, 0.05)' }, 
-        '玉玉': { main: '#00cc66', light: 'rgba(0, 204, 100, 0.08)' }, 
-        '雙刀': { main: '#cc66ff', light: 'rgba(204, 102, 255, 0.08)' } 
+        '九九': { main: '#4d94ff', glow: 'rgba(77, 148, 255, 0.3)' }, 
+        '無名': { main: '#33ccff', glow: 'rgba(51, 204, 255, 0.3)' }, 
+        '威威': { main: '#ffaa33', glow: 'rgba(255, 170, 51, 0.3)' }, 
+        '霖霖': { main: '#44ff44', glow: 'rgba(68, 255, 68, 0.3)' }, 
+        '玉玉': { main: '#00cc66', glow: 'rgba(0, 204, 102, 0.3)' }, 
+        '雙刀': { main: '#cc66ff', glow: 'rgba(204, 102, 255, 0.3)' } 
     };
 
-    const getColors = (style) => styleColors[style] || { main: '#aaa', light: 'rgba(255,255,255,0.05)' };
+    const getColors = (style) => styleColors[style] || { main: '#aaa', glow: 'rgba(255,255,255,0.1)' };
     let globalAssigns = {};
 
     onValue(assignsRef, (snapshot) => {
@@ -229,15 +237,15 @@
 
             for (let id in data) {
                 const m = data[id];
+                const colors = getColors(m.style);
                 let isSat = Object.values(globalAssigns).some(a => a.mid === id && a.target.startsWith('sat'));
                 let isSun = Object.values(globalAssigns).some(a => a.mid === id && a.target.startsWith('sun'));
 
                 const card = document.createElement('div');
                 card.className = "card";
-                card.style.borderLeftColor = getColors(m.style).main;
-                card.style.flexDirection = "column"; /* 讓按鈕排在文字下方，保持卡片窄度 */
-                card.style.alignItems = "flex-start";
-                
+                card.style.borderLeftColor = colors.main;
+                card.style.boxShadow = `-4px 0 10px ${colors.glow}`; // 讓顏色出來一點
+
                 let btns = '';
                 if(m.days.includes('六')) {
                     btns += `<button class="btn-sat ${isSat?'btn-assigned':''}" onclick="assign('${id}','sat1')">六1</button>`;
@@ -271,11 +279,13 @@
             const container = document.getElementById(a.target);
             if (!container) continue;
             stats[a.target] += a.power; counts[a.target]++;
+            
             const card = document.createElement('div');
             card.className = "card";
             const colors = getColors(a.style);
             card.style.borderLeftColor = colors.main;
-            card.style.backgroundColor = colors.light;
+            card.style.boxShadow = `-4px 0 10px ${colors.glow}`;
+            
             card.innerHTML = `
                 <button class="del-btn" onclick="unassign('${aid}')">✕</button>
                 <div class="card-content">
@@ -290,13 +300,13 @@
         });
     }
 
-    // --- 其餘 Firebase 邏輯保持不變 ---
     window.assign = async (mid, targetTeam) => {
         const targetPrefix = targetTeam.substring(0, 3); 
         if (Object.values(globalAssigns).some(a => a.mid === mid && a.target.startsWith(targetPrefix))) return alert("⚠️ 本日已分配");
         const mSnap = await get(ref(db, `members/${mid}`));
         if(mSnap.exists()) push(assignsRef, { ...mSnap.val(), mid: mid, target: targetTeam });
     };
+
     document.getElementById('addBtn').onclick = () => {
         const name = document.getElementById('pName').value, power = parseInt(document.getElementById('pPower').value), style = document.getElementById('pStyle').value;
         const days = Array.from(document.querySelectorAll('input[name="pDay"]:checked')).map(n => n.value);
@@ -304,6 +314,7 @@
         push(membersRef, { name, power, style, days });
         document.getElementById('pName').value = ''; document.getElementById('pPower').value = '';
     };
+
     window.unassign = (aid) => remove(ref(db, `assigns/${aid}`));
     window.deleteMember = (mid) => {
         if(checkAdmin() && confirm("確定刪除此成員？")) {
@@ -314,9 +325,9 @@
     document.getElementById('resetBtn').onclick = () => { if(checkAdmin() && confirm("確定清空分配？")) set(assignsRef, null); };
     document.getElementById('clearAllBtn').onclick = () => { if(checkAdmin() && confirm("確定全部清空？")) { set(membersRef, null); set(assignsRef, null); } };
     document.getElementById('exportBtn').onclick = () => {
-        let res = "--- 🌸 配置結果 ---\n";
+        let res = "--- 🌸 墨雨笙花 百業戰配置結果 ---\n";
         ['sat1', 'sat2', 'sun1', 'sun2'].forEach(id => {
-            res += `\n【 ${id} 】\n`;
+            res += `\n【 ${document.getElementById('col-'+id).querySelector('h2').innerText} 】\n`;
             document.getElementById(id).querySelectorAll('.card').forEach(c => {
                 res += `- ${c.querySelector('.name').innerText} (${c.querySelector('.info-text').innerText})\n`;
             });
@@ -324,6 +335,5 @@
         const out = document.getElementById('output'); out.value = res; out.style.display = 'block'; out.select();
     };
 </script>
-
 </body>
 </html>
