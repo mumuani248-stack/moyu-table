@@ -12,7 +12,6 @@
             --bg-dark: #1a1a1e;
         }
 
-        /* 全域修正：防止 padding 撐開寬度導致溢出 */
         * { box-sizing: border-box; }
 
         body { 
@@ -22,35 +21,47 @@
             color: #e0e0e0; 
         }
         
-        .container { max-width: 1400px; margin: auto; }
+        .container { max-width: 1600px; margin: auto; }
         h1 { text-align: center; color: #fff; margin-bottom: 20px; letter-spacing: 2px; font-size: 1.8rem; }
         .main-layout { display: flex; gap: 15px; align-items: flex-start; }
         
-        /* --- 待命成員容器 --- */
+        /* --- 待命成員容器 (左側面板) --- */
         .pool-section { 
-            width: 240px; 
+            width: 280px; /* 稍微加寬以容納分類 */
             background: #252529; 
             padding: 15px; 
             border-radius: 12px; 
             position: sticky; 
             top: 10px; 
             border: 1px solid #444;
+            max-height: 95vh;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
         }
 
-        /* --- 成員卡片：邊緣強化版 --- */
+        /* 分類標題樣式 */
+        .style-group-header {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin: 15px 0 8px 5px;
+            padding-left: 8px;
+            border-left: 3px solid #666;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* --- 成員卡片樣式 (維持原本優點) --- */
         .card { 
             background: #2d2d32; 
             border-radius: 4px; 
-            padding: 10px 12px; 
-            margin-bottom: 8px; 
-            /* 強化左側色條 */
+            padding: 8px 10px; 
+            margin-bottom: 6px; 
             border-left: 6px solid #007bff; 
             border-top: 1px solid #3d3d42;
             border-right: 1px solid #3d3d42;
             border-bottom: 1px solid #3d3d42;
-            
             position: relative; 
             display: flex; 
             flex-direction: column;
@@ -58,57 +69,32 @@
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        /* 柔和橫向無縫掃光 */
+        /* 柔和橫向掃光 */
         .card::after {
             content: "";
             position: absolute;
-            top: 0;
-            left: -150%;
-            width: 150%;
-            height: 100%;
-            background: linear-gradient(
-                90deg, 
-                transparent, 
-                rgba(255, 255, 255, 0.01) 20%, 
-                rgba(255, 255, 255, 0.08) 50%, 
-                rgba(255, 255, 255, 0.01) 80%, 
-                transparent
-            );
+            top: 0; left: -150%; width: 150%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.01) 20%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.01) 80%, transparent);
             transform: skewX(-25deg);
             animation: softScan 5s infinite linear;
             pointer-events: none;
             z-index: 1;
         }
 
-        @keyframes softScan {
-            0% { left: -150%; }
-            100% { left: 150%; }
-        }
+        @keyframes softScan { 0% { left: -150%; } 100% { left: 150%; } }
 
         .card-content {
-            display: flex;
-            align-items: baseline;
-            gap: 8px;
-            font-size: 0.95rem;
-            white-space: nowrap;
-            overflow: hidden;
-            position: relative;
-            z-index: 2;
-            margin-bottom: 8px;
+            display: flex; align-items: baseline; gap: 6px; font-size: 0.9rem;
+            white-space: nowrap; overflow: hidden; position: relative; z-index: 2; margin-bottom: 6px;
         }
 
         .card .name { font-weight: bold; color: #ffffff; }
-        .card .info-text { color: #bbbbbb; font-size: 0.8rem; letter-spacing: 0.5px; }
-
-        .card:hover { 
-            background: #35353b; 
-            transform: translateX(3px); 
-        }
+        .card .info-text { color: #bbbbbb; font-size: 0.75rem; }
 
         /* 隊伍看板區 */
         .board { flex-grow: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         .column { 
-            position: relative; background: #252529; border-radius: 12px; padding: 12px; min-height: 400px; 
+            position: relative; background: #252529; border-radius: 12px; padding: 12px; min-height: 450px; 
             display: flex; flex-direction: column; overflow: hidden; z-index: 1;
         }
         .column::before {
@@ -121,35 +107,22 @@
         .column::after { content: ""; position: absolute; inset: 2px; background: #252529; border-radius: 10px; z-index: -1; }
         @keyframes rotate { 100% { transform: rotate(360deg); } }
 
-        /* UI 元件 */
         .stat-bar { background: rgba(255,255,255,0.05); text-align: center; font-size: 0.9rem; padding: 5px; border-radius: 5px; margin-bottom: 10px; border: 1px dashed #555; }
-        .item-list { flex-grow: 1; }
         
         button { cursor: pointer; border: none; transition: 0.2s; }
-        .assign-btns { display: flex; gap: 5px; z-index: 5; }
-        .assign-btns button { padding: 3px 10px; font-size: 11px; border-radius: 4px; color: white; font-weight: bold; }
+        .assign-btns { display: flex; gap: 3px; z-index: 5; }
+        .assign-btns button { padding: 2px 6px; font-size: 10px; border-radius: 3px; color: white; font-weight: bold; }
         .btn-sat { background: #ff4d6d; }
         .btn-sun { background: #4361ee; }
         .btn-assigned { background: #444 !important; color: #888 !important; }
-        .del-btn { position: absolute; top: 6px; right: 6px; background: rgba(255, 77, 77, 0.7); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center; z-index: 10; }
+        .del-btn { position: absolute; top: 4px; right: 4px; background: rgba(255, 77, 77, 0.7); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; display: flex; align-items: center; justify-content: center; z-index: 10; }
         
-        /* 修正輸入框溢出問題 */
-        .input-group { width: 100%; }
-        .input-group input { 
-            width: 100%; 
-            padding: 10px; 
-            margin-bottom: 8px; 
-            border: 1px solid #444; 
-            border-radius: 4px; 
-            background: #121214; 
-            color: #fff; 
-            font-size: 0.9rem;
-            display: block;
-        }
-        .day-check-group { margin: 10px 0; display: flex; justify-content: center; gap: 12px; }
-        .day-check { display: flex; align-items: center; font-size: 0.85rem; cursor: pointer; gap: 4px; }
-
-        #addBtn { width: 100%; background: #4e4e54; color: white; padding: 10px; border-radius: 4px; font-weight: bold; font-size: 0.9rem; }
+        /* 輸入框修正 */
+        .input-group input { width: 100%; padding: 8px; margin-bottom: 6px; border: 1px solid #444; border-radius: 4px; background: #121214; color: #fff; font-size: 0.85rem; display: block; }
+        .day-check-group { margin: 8px 0; display: flex; justify-content: center; gap: 10px; }
+        .day-check { display: flex; align-items: center; font-size: 0.8rem; cursor: pointer; gap: 4px; }
+        #addBtn { width: 100%; background: #4e4e54; color: white; padding: 8px; border-radius: 4px; font-weight: bold; }
+        
         .export-section { margin-top: 20px; text-align: center; padding-bottom: 40px; }
         #output { width: 80%; height: 120px; display: none; margin: 15px auto; background: #121214; color: #00ff00; padding: 10px; }
     </style>
@@ -163,7 +136,7 @@
             <div class="input-group">
                 <input type="text" id="pName" placeholder="名稱">
                 <input type="number" id="pPower" placeholder="戰力">
-                <input type="text" id="pStyle" list="styleOptions" placeholder="流派">
+                <input type="text" id="pStyle" list="styleOptions" placeholder="流派 (可自訂)">
                 <datalist id="styleOptions">
                     <option value="威威"><option value="玉玉"><option value="霖霖">
                     <option value="無名"><option value="九九"><option value="雙刀">
@@ -175,7 +148,7 @@
                 <button id="addBtn">✨ 加入成員</button>
             </div>
             <hr style="border: 0.5px solid #333; margin: 15px 0;">
-            <div id="poolList"></div>
+            <div id="poolContainer"></div>
         </div>
 
         <div class="board">
@@ -198,7 +171,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, push, onValue, remove, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // Firebase 配置
     const firebaseConfig = {
         apiKey: "AIzaSyAV08lkRKtqclvDoju-cSmmN85fAM5fD-E",
         authDomain: "project1-efdf0.firebaseapp.com",
@@ -215,14 +187,7 @@
     const membersRef = ref(db, 'members');
     const assignsRef = ref(db, 'assigns');
 
-    let isAdmin = false;
-    const checkAdmin = () => {
-        if (isAdmin) return true;
-        const password = prompt("管理者密碼：");
-        if (password === "0404") { isAdmin = true; return true; }
-        return false;
-    };
-
+    const mainStyles = ['九九', '無名', '威威', '霖霖', '玉玉', '雙刀'];
     const styleColors = { 
         '九九': { main: '#4d94ff', glow: 'rgba(77, 148, 255, 0.4)' }, 
         '無名': { main: '#33ccff', glow: 'rgba(51, 204, 255, 0.4)' }, 
@@ -232,7 +197,7 @@
         '雙刀': { main: '#cc66ff', glow: 'rgba(204, 102, 255, 0.4)' } 
     };
 
-    const getColors = (style) => styleColors[style] || { main: '#aaa', glow: 'rgba(255,255,255,0.1)' };
+    const getColors = (style) => styleColors[style] || { main: '#a29bfe', glow: 'rgba(162, 155, 254, 0.3)' };
     let globalAssigns = {};
 
     onValue(assignsRef, (snapshot) => {
@@ -242,44 +207,64 @@
 
     onValue(membersRef, (snapshot) => { renderPool(); });
 
-    function renderPool() {
-        get(membersRef).then(snap => {
-            const data = snap.val();
-            const pool = document.getElementById('poolList');
-            pool.innerHTML = '';
-            if (!data) return;
+    async function renderPool() {
+        const snap = await get(membersRef);
+        const data = snap.val();
+        const container = document.getElementById('poolContainer');
+        container.innerHTML = '';
+        if (!data) return;
 
-            for (let id in data) {
-                const m = data[id];
+        // --- 分類邏輯 ---
+        const groups = { '其他': [] };
+        mainStyles.forEach(s => groups[s] = []);
+
+        for (let id in data) {
+            const m = data[id];
+            const targetGroup = mainStyles.includes(m.style) ? m.style : '其他';
+            groups[targetGroup].push({ id, ...m });
+        }
+
+        // --- 渲染分類 ---
+        const sortedGroups = [...mainStyles, '其他'];
+        sortedGroups.forEach(styleName => {
+            const members = groups[styleName];
+            if (members.length === 0) return;
+
+            const header = document.createElement('div');
+            header.className = 'style-group-header';
+            header.innerHTML = `<span>${styleName}</span> <span style="font-size:0.7rem;">${members.length} 人</span>`;
+            container.appendChild(header);
+
+            members.forEach(m => {
                 const colors = getColors(m.style);
-                let isSat = Object.values(globalAssigns).some(a => a.mid === id && a.target.startsWith('sat'));
-                let isSun = Object.values(globalAssigns).some(a => a.mid === id && a.target.startsWith('sun'));
+                let isSat = Object.values(globalAssigns).some(a => a.mid === m.id && a.target.startsWith('sat'));
+                let isSun = Object.values(globalAssigns).some(a => a.mid === m.id && a.target.startsWith('sun'));
 
                 const card = document.createElement('div');
                 card.className = "card";
                 card.style.borderLeftColor = colors.main;
-                card.style.boxShadow = `-5px 0 12px ${colors.glow}`;
+                card.style.boxShadow = `-5px 0 10px ${colors.glow}`;
 
                 let btns = '';
                 if(m.days.includes('六')) {
-                    btns += `<button class="btn-sat ${isSat?'btn-assigned':''}" onclick="assign('${id}','sat1')">六1</button>`;
-                    btns += `<button class="btn-sat ${isSat?'btn-assigned':''}" onclick="assign('${id}','sat2')">六2</button>`;
+                    btns += `<button class="btn-sat ${isSat?'btn-assigned':''}" onclick="assign('${m.id}','sat1')">六1</button>`;
+                    btns += `<button class="btn-sat ${isSat?'btn-assigned':''}" onclick="assign('${m.id}','sat2')">六2</button>`;
                 }
                 if(m.days.includes('日')) {
-                    btns += `<button class="btn-sun ${isSun?'btn-assigned':''}" onclick="assign('${id}','sun1')">日1</button>`;
-                    btns += `<button class="btn-sun ${isSun?'btn-assigned':''}" onclick="assign('${id}','sun2')">日2</button>`;
+                    btns += `<button class="btn-sun ${isSun?'btn-assigned':''}" onclick="assign('${m.id}','sun1')">日1</button>`;
+                    btns += `<button class="btn-sun ${isSun?'btn-assigned':''}" onclick="assign('${m.id}','sun2')">日2</button>`;
                 }
 
                 card.innerHTML = `
-                    <button class="del-btn" onclick="deleteMember('${id}')">✕</button>
+                    <button class="del-btn" onclick="deleteMember('${m.id}')">✕</button>
                     <div class="card-content">
                         <span class="name">${m.name}</span>
                         <span class="info-text">${m.power.toLocaleString()} | ${m.style}</span>
                     </div>
                     <div class="assign-btns">${btns}</div>
                 `;
-                pool.appendChild(card);
-            }
+                container.appendChild(card);
+            });
         });
     }
 
@@ -298,7 +283,7 @@
             card.className = "card";
             const colors = getColors(a.style);
             card.style.borderLeftColor = colors.main;
-            card.style.boxShadow = `-5px 0 12px ${colors.glow}`;
+            card.style.boxShadow = `-5px 0 10px ${colors.glow}`;
             
             card.innerHTML = `
                 <button class="del-btn" onclick="unassign('${aid}')">✕</button>
@@ -313,6 +298,10 @@
             document.getElementById(`stat-${id}`).innerText = `戰力: ${stats[id].toLocaleString()} | ${counts[id]} 人`;
         });
     }
+
+    // --- 管理與 Firebase 邏輯 ---
+    let isAdmin = false;
+    const checkAdmin = () => { if (isAdmin) return true; const password = prompt("管理者密碼："); if (password === "0404") { isAdmin = true; return true; } return false; };
 
     window.assign = async (mid, targetTeam) => {
         const targetPrefix = targetTeam.substring(0, 3); 
