@@ -2,15 +2,15 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>墨雨笙花百業戰配置表 - 動態增強版</title>
+    <title>墨雨笙花百業戰配置表</title>
     <style>
         :root {
             --sat-color: #ff4d6d;
             --sun-color: #4361ee;
+            --pool-color: #a29bfe; /* 名單池專屬銀紫色 */
             --glow-speed: 3s;
             --bg-dark: #1a1a1e;
             --card-dark: rgba(45, 45, 50, 0.9);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body { 
@@ -18,40 +18,57 @@
             background: var(--bg-dark); 
             padding: 10px; 
             color: #e0e0e0; 
-            overflow-x: hidden;
         }
         
         .container { max-width: 1400px; margin: auto; }
         
-        h1 { 
-            text-align: center; color: #fff; margin-bottom: 20px; 
-            letter-spacing: 4px; font-size: 2rem;
-            text-shadow: 0 0 10px rgba(255,255,255,0.3);
-        }
+        h1 { text-align: center; color: #fff; margin-bottom: 20px; letter-spacing: 2px; font-size: 1.8rem; }
 
-        .main-layout { display: flex; gap: 20px; align-items: flex-start; }
+        .main-layout { display: flex; gap: 15px; align-items: flex-start; }
         
-        /* 左側名冊區塊 */
+        /* --- 成員名單池流光框實作 --- */
         .pool-section { 
-            width: 260px; 
-            background: var(--card-dark); 
-            padding: 15px; 
+            width: 200px; 
+            position: relative;
+            background: #252529; 
+            padding: 12px; 
             border-radius: 12px; 
             position: sticky; 
             top: 10px; 
-            border: 1px solid #444;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow: hidden; /* 確保流光不超出 */
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
         }
-        
-        /* 隊伍看板區塊 */
+        .pool-section::before {
+            content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: conic-gradient(transparent, transparent, transparent, var(--pool-color));
+            animation: rotate var(--glow-speed) linear infinite; z-index: -2;
+        }
+        .pool-section::after { content: ""; position: absolute; inset: 2px; background: #252529; border-radius: 10px; z-index: -1; }
+
         .board { flex-grow: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
 
-        .day-check-group { margin: 10px 0; display: flex; justify-content: center; gap: 15px; }
-        .day-check { display: flex; align-items: center; font-size: 0.9rem; color: #ccc; cursor: pointer; gap: 4px; }
+        /* --- 修正手機版勾選框歪掉的問題 --- */
+        .day-check-group { 
+            margin: 10px 0; 
+            display: flex; 
+            justify-content: center; 
+            gap: 12px; 
+            flex-wrap: nowrap; /* 強制不換行 */
+        }
+        .day-check { 
+            display: flex; 
+            align-items: center; 
+            font-size: 0.85rem; 
+            color: #ccc; 
+            cursor: pointer; 
+            white-space: nowrap; 
+            gap: 4px;
+        }
 
-        /* 旋轉外框動畫 */
         .column { 
-            position: relative; background: #252529; border-radius: 12px; padding: 15px; min-height: 450px; 
+            position: relative; background: #252529; border-radius: 12px; padding: 12px; min-height: 400px; 
             display: flex; flex-direction: column; overflow: hidden; z-index: 1;
         }
         .column::before {
@@ -65,87 +82,53 @@
 
         @keyframes rotate { 100% { transform: rotate(360deg); } }
 
-        /* 卡片登場動畫 */
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); filter: blur(5px); }
-            to { opacity: 1; transform: translateX(0); filter: blur(0); }
-        }
-
-        .column h2 { text-align: center; font-size: 1.2rem; margin-bottom: 10px; color: #fff; }
+        .column h2 { text-align: center; font-size: 1.1rem; margin-bottom: 8px; }
         .stat-bar { 
             background: rgba(255,255,255,0.05); text-align: center; font-size: 0.9rem; 
-            padding: 8px; border-radius: 6px; margin-bottom: 12px; border: 1px dashed #555; 
+            padding: 5px; border-radius: 5px; margin-bottom: 10px; border: 1px dashed #555; 
         }
         
         .item-list { flex-grow: 1; }
 
-        /* 成員卡片基礎樣式 */
         .card { 
-            background: #2d2d32; border-radius: 6px; padding: 10px; margin-bottom: 10px; 
-            position: relative; border: 1px solid #3d3d42;
-            display: flex; align-items: center; gap: 10px;
-            transition: var(--transition);
-            animation: slideIn 0.4s ease-out forwards;
+            background: #2d2d32; border-radius: 4px; padding: 6px 10px; margin-bottom: 6px; 
+            border-left: 4px solid #007bff; position: relative; border: 1px solid #3d3d42;
+            display: flex; align-items: center; gap: 8px;
+            transition: transform 0.2s; /* 加入一點平滑感 */
         }
-        .card:hover { 
-            background: #3a3a42; 
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            z-index: 2;
-        }
+        .card:hover { background: #35353b; transform: translateX(3px); }
+        .card p { margin: 0; white-space: nowrap; font-size: 0.9rem; }
+        .card .name { font-weight: bold; min-width: 60px; overflow: hidden; text-overflow: ellipsis; }
+        .card .info-text { color: #aaa; flex-grow: 1; }
 
-        /* 名冊專用卡片樣式 */
-        #poolList .card { 
-            flex-direction: column; align-items: flex-start; gap: 6px; 
-            border-left: 4px solid #aaa;
-        }
-        
-        .card .name { font-weight: bold; font-size: 1rem; color: #fff; }
-        .card .info-text { color: #aaa; font-size: 0.85rem; }
+        #poolList .card { flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px; }
+        #poolList .info-text { font-size: 0.8rem; }
 
-        /* 按鈕設計 */
-        button { cursor: pointer; border: none; transition: var(--transition); }
-        button:active { transform: scale(0.9); }
+        button { cursor: pointer; border: none; transition: 0.2s; }
+        button:active { transform: scale(0.95); }
+        .assign-btns { display: flex; gap: 3px; width: 100%; }
+        .assign-btns button { padding: 3px 0; font-size: 11px; border-radius: 3px; color: white; flex: 1; font-weight: bold; }
         
-        .assign-btns { display: flex; gap: 4px; width: 100%; margin-top: 5px; }
-        .assign-btns button { 
-            padding: 4px 0; font-size: 11px; border-radius: 4px; color: white; flex: 1; 
-            font-weight: bold; opacity: 0.8;
-        }
-        .assign-btns button:hover { opacity: 1; filter: brightness(1.2); }
-        
-        .btn-sat { background: linear-gradient(135deg, #ff4d6d, #c9184a); }
-        .btn-sun { background: linear-gradient(135deg, #4361ee, #3a0ca3); }
-        .btn-assigned { background: #444 !important; color: #888 !important; pointer-events: none; }
+        .btn-sat { background: #ff4d6d; }
+        .btn-sun { background: #4361ee; }
+        .btn-assigned { background: #444 !important; color: #888 !important; }
 
         .del-btn {
-            position: absolute; top: 10px; right: 8px;
-            background: rgba(255, 77, 77, 0.2); color: #ff4d4d; border-radius: 50%;
-            width: 22px; height: 22px; font-size: 12px; display: flex; align-items: center; justify-content: center;
+            position: absolute; top: 50%; right: 8px; transform: translateY(-50%);
+            background: rgba(255, 77, 77, 0.6); color: white; border-radius: 50%;
+            width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center;
         }
-        .del-btn:hover { background: #ff4d4d; color: white; }
         
-        /* 輸入框美化 */
         .input-group input { 
-            width: 100%; padding: 10px; margin-bottom: 8px; box-sizing: border-box;
-            border: 1px solid #444; border-radius: 6px; background: #121214; color: #fff; 
+            width: 100%; padding: 8px; margin-bottom: 6px; box-sizing: border-box;
+            border: 1px solid #444; border-radius: 4px; background: #121214; color: #fff; font-size: 0.85rem; 
         }
-        .input-group input:focus { border-color: #007bff; outline: none; box-shadow: 0 0 5px rgba(0,123,255,0.5); }
-        
-        #addBtn { 
-            width: 100%; background: linear-gradient(135deg, #4e4e54, #2d2d32); color: white; 
-            padding: 12px; border-radius: 6px; font-weight: bold; margin-top: 5px;
-        }
-        #addBtn:hover { background: #666; }
+        #addBtn { width: 100%; background: #4e4e54; color: white; padding: 10px; border-radius: 4px; font-weight: bold; }
 
-        .export-section { margin-top: 30px; text-align: center; padding-bottom: 50px; }
-        .export-section button { padding: 12px 25px; border-radius: 6px; font-weight: bold; margin: 0 8px; }
+        .export-section { margin-top: 20px; text-align: center; padding-bottom: 40px; }
+        .export-section button { padding: 10px 20px; border-radius: 4px; font-weight: bold; margin: 0 5px; }
         
-        #output { 
-            width: 80%; height: 150px; display: none; margin: 20px auto; 
-            background: #000; color: #00ff00; padding: 15px; font-family: monospace;
-            border: 1px solid #333; border-radius: 8px;
-        }
+        #output { width: 80%; height: 120px; display: none; margin: 15px auto; background: #121214; color: #00ff00; padding: 10px; }
 
     </style>
 </head>
@@ -157,51 +140,51 @@
     <div class="main-layout">
         <div class="pool-section">
             <div class="input-group">
-                <input type="text" id="pName" placeholder="成員名稱">
+                <input type="text" id="pName" placeholder="名稱">
                 <input type="number" id="pPower" placeholder="戰力">
-                <input type="text" id="pStyle" list="styleOptions" placeholder="選擇流派">
+                <input type="text" id="pStyle" list="styleOptions" placeholder="流派">
                 <datalist id="styleOptions">
                     <option value="威威"><option value="玉玉"><option value="霖霖">
                     <option value="無名"><option value="九九"><option value="雙刀">
                 </datalist>
                 <div class="day-check-group">
-                    <label class="day-check"><input type="checkbox" name="pDay" value="六"> 禮拜六</label>
-                    <label class="day-check"><input type="checkbox" name="pDay" value="日"> 禮拜日</label>
+                    <label class="day-check"><input type="checkbox" name="pDay" value="六"> 六</label>
+                    <label class="day-check"><input type="checkbox" name="pDay" value="日"> 日</label>
                 </div>
-                <button id="addBtn">✨ 加入名冊</button>
+                <button id="addBtn">✨ 加入成員</button>
             </div>
-            <hr style="border: 0.5px solid #333; margin: 15px 0;">
+            <hr style="border: 0.5px solid #333; margin: 10px 0;">
             <div id="poolList"></div>
         </div>
 
         <div class="board">
             <div class="column sat" id="col-sat1">
                 <h2>禮拜六 一隊</h2>
-                <div class="stat-bar" id="stat-sat1">戰力: 0 | 0人</div>
+                <div class="stat-bar" id="stat-sat1">0 | 0人</div>
                 <div class="item-list" id="sat1"></div>
             </div>
             <div class="column sat" id="col-sat2">
                 <h2>禮拜六 二隊</h2>
-                <div class="stat-bar" id="stat-sat2">戰力: 0 | 0人</div>
+                <div class="stat-bar" id="stat-sat2">0 | 0人</div>
                 <div class="item-list" id="sat2"></div>
             </div>
             <div class="column sun" id="col-sun1">
                 <h2>禮拜日 一隊</h2>
-                <div class="stat-bar" id="stat-sun1">戰力: 0 | 0人</div>
+                <div class="stat-bar" id="stat-sun1">0 | 0人</div>
                 <div class="item-list" id="sun1"></div>
             </div>
             <div class="column sun" id="col-sun2">
                 <h2>禮拜日 二隊</h2>
-                <div class="stat-bar" id="stat-sun2">戰力: 0 | 0人</div>
+                <div class="stat-bar" id="stat-sun2">0 | 0人</div>
                 <div class="item-list" id="sun2"></div>
             </div>
         </div>
     </div>
 
     <div class="export-section">
-        <button style="background: #2d6a4f; color: white;" id="exportBtn">📋 複製配置文字</button>
-        <button style="background: #444; color: #ccc;" id="resetBtn">🗑️ 重置所有分配</button>
-        <button style="background: #780000; color: #fff;" id="clearAllBtn">🧨 毀滅性清空名冊</button>
+        <button style="background: #2d6a4f; color: white;" id="exportBtn">📋 輸出配置</button>
+        <button style="background: #444; color: #ccc;" id="resetBtn">🗑️ 清空分配</button>
+        <button style="background: #780000; color: #fff;" id="clearAllBtn">🧨 全部清空名冊</button>
         <textarea id="output" readonly></textarea>
     </div>
 </div>
@@ -210,7 +193,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, push, onValue, remove, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // Firebase 配置 (建議不要公開金鑰)
     const firebaseConfig = {
         apiKey: "AIzaSyAV08lkRKtqclvDoju-cSmmN85fAM5fD-E",
         authDomain: "project1-efdf0.firebaseapp.com",
@@ -230,33 +212,30 @@
     let isAdmin = false;
     const checkAdmin = () => {
         if (isAdmin) return true;
-        const password = prompt("請輸入管理者密碼：");
+        const password = prompt("管理者密碼：");
         if (password === "0404") { isAdmin = true; return true; }
-        alert("密碼錯誤");
         return false;
     };
 
     const styleColors = { 
-        '九九': { main: '#4d94ff', light: 'rgba(77, 148, 255, 0.15)' }, 
-        '無名': { main: '#33ccff', light: 'rgba(51, 204, 255, 0.12)' }, 
-        '威威': { main: '#ffaa33', light: 'rgba(255, 170, 51, 0.12)' }, 
-        '霖霖': { main: '#44ff44', light: 'rgba(68, 255, 68, 0.1)' }, 
-        '玉玉': { main: '#00cc66', light: 'rgba(0, 204, 102, 0.12)' }, 
-        '雙刀': { main: '#cc66ff', light: 'rgba(204, 102, 255, 0.12)' } 
+        '九九': { main: '#4d94ff', light: 'rgba(0, 100, 255, 0.1)' }, 
+        '無名': { main: '#33ccff', light: 'rgba(0, 204, 255, 0.08)' }, 
+        '威威': { main: '#ffaa33', light: 'rgba(255, 170, 50, 0.08)' }, 
+        '霖霖': { main: '#44ff44', light: 'rgba(0, 255, 0, 0.05)' }, 
+        '玉玉': { main: '#00cc66', light: 'rgba(0, 204, 100, 0.08)' }, 
+        '雙刀': { main: '#cc66ff', light: 'rgba(204, 102, 255, 0.08)' } 
     };
 
     const getColors = (style) => styleColors[style] || { main: '#aaa', light: 'rgba(255,255,255,0.05)' };
 
     let globalAssigns = {};
 
-    // 監聽分配變動
     onValue(assignsRef, (snapshot) => {
         globalAssigns = snapshot.val() || {};
         renderPool(); 
         renderTeams(); 
     });
 
-    // 監聽名冊變動
     onValue(membersRef, (snapshot) => { renderPool(); });
 
     function renderPool() {
@@ -266,19 +245,15 @@
             pool.innerHTML = '';
             if (!data) return;
 
-            let index = 0;
             for (let id in data) {
                 const m = data[id];
-                const colors = getColors(m.style);
                 let isSat = Object.values(globalAssigns).some(a => a.mid === id && a.target.startsWith('sat'));
                 let isSun = Object.values(globalAssigns).some(a => a.mid === id && a.target.startsWith('sun'));
 
                 const card = document.createElement('div');
                 card.className = "card";
-                card.style.borderLeftColor = colors.main;
-                card.style.boxShadow = `inset 0 0 10px ${colors.light}`;
-                card.style.animationDelay = `${index * 0.05}s`; // 交錯登場
-
+                card.style.borderLeftColor = getColors(m.style).main;
+                
                 let btns = '';
                 if(m.days.includes('六')) {
                     btns += `<button class="btn-sat ${isSat?'btn-assigned':''}" onclick="assign('${id}','sat1')">六1</button>`;
@@ -290,13 +265,12 @@
                 }
 
                 card.innerHTML = `
-                    <button class="del-btn" onclick="deleteMember('${id}')">✕</button>
+                    <button class="del-btn" style="top:5px; transform:none;" onclick="deleteMember('${id}')">✕</button>
                     <p class="name">${m.name}</p>
                     <p class="info-text">戰:${m.power.toLocaleString()} | ${m.style}</p>
                     <div class="assign-btns">${btns}</div>
                 `;
                 pool.appendChild(card);
-                index++;
             }
         });
     }
@@ -315,7 +289,7 @@
             const card = document.createElement('div');
             card.className = "card";
             const colors = getColors(a.style);
-            card.style.borderLeft = `4px solid ${colors.main}`;
+            card.style.borderLeftColor = colors.main;
             card.style.backgroundColor = colors.light;
             
             card.innerHTML = `
@@ -330,7 +304,6 @@
         });
     }
 
-    // 全域函式掛載
     window.assign = async (mid, targetTeam) => {
         const targetPrefix = targetTeam.substring(0, 3); 
         if (Object.values(globalAssigns).some(a => a.mid === mid && a.target.startsWith(targetPrefix))) return alert("⚠️ 本日已分配");
@@ -338,8 +311,16 @@
         if(mSnap.exists()) push(assignsRef, { ...mSnap.val(), mid: mid, target: targetTeam });
     };
 
-    window.unassign = (aid) => remove(ref(db, `assigns/${aid}`));
+    document.getElementById('addBtn').onclick = () => {
+        const name = document.getElementById('pName').value, power = parseInt(document.getElementById('pPower').value), style = document.getElementById('pStyle').value;
+        const days = Array.from(document.querySelectorAll('input[name="pDay"]:checked')).map(n => n.value);
+        if (!name || isNaN(power) || days.length === 0) return alert("資訊不完整");
+        push(membersRef, { name, power, style, days });
+        document.getElementById('pName').value = ''; document.getElementById('pPower').value = '';
+    };
 
+    window.unassign = (aid) => remove(ref(db, `assigns/${aid}`));
+    
     window.deleteMember = (mid) => {
         if(checkAdmin() && confirm("確定從名冊中刪除此成員？")) {
             remove(ref(db, `members/${mid}`));
@@ -347,26 +328,17 @@
         }
     };
 
-    document.getElementById('addBtn').onclick = () => {
-        const name = document.getElementById('pName').value, 
-              power = parseInt(document.getElementById('pPower').value), 
-              style = document.getElementById('pStyle').value;
-        const days = Array.from(document.querySelectorAll('input[name="pDay"]:checked')).map(n => n.value);
-        if (!name || isNaN(power) || days.length === 0) return alert("資訊不完整");
-        push(membersRef, { name, power, style, days });
-        document.getElementById('pName').value = ''; 
-        document.getElementById('pPower').value = '';
-    };
-
     document.getElementById('resetBtn').onclick = () => { 
-        if(checkAdmin() && confirm("確定要清空『所有隊伍分配』嗎？")) set(assignsRef, null); 
+        if(checkAdmin() && confirm("確定要清空『所有隊伍分配』嗎？（名冊不會動）")) set(assignsRef, null); 
     };
 
     document.getElementById('clearAllBtn').onclick = () => {
-        if(checkAdmin() && confirm("⚠️ 注意！這會刪除整個名冊和所有分配！")) {
-            set(membersRef, null);
-            set(assignsRef, null);
-            alert("數據已全數歸零");
+        if(checkAdmin()) {
+            if(confirm("⚠️ 注意！這會刪除『整個名冊』和『所有隊伍』！\n確定要執行毀滅性清空嗎？")) {
+                set(membersRef, null);
+                set(assignsRef, null);
+                alert("已全部清空！");
+            }
         }
     };
 
@@ -376,14 +348,13 @@
         ['sat1', 'sat2', 'sun1', 'sun2'].forEach(id => {
             res += `\n【 ${titles[id]} 】\n`;
             const cards = document.getElementById(id).querySelectorAll('.card');
-            if (cards.length === 0) res += " (尚未配置成員)\n";
+            if (cards.length === 0) res += " (尚無成員)\n";
             else cards.forEach(c => {
                 res += `- ${c.querySelector('.name').innerText} (${c.querySelector('.info-text').innerText})\n`;
             });
         });
         const out = document.getElementById('output');
         out.value = res; out.style.display = 'block'; out.select();
-        alert("配置已生成在下方，請複製使用！");
     };
 </script>
 
