@@ -7,6 +7,7 @@
         :root {
             --sat-color: #ff4d6d;
             --sun-color: #4361ee;
+            --glow-speed: 3s;
             --bg-dark: #1a1a1e;
         }
 
@@ -49,7 +50,7 @@
             border: 1px solid #00d4ff;
             border-radius: 6px;
             padding: 8px;
-            margin-top: 10px;
+            margin: 10px 0;
             text-align: center;
             font-size: 0.9rem;
             color: #00d4ff;
@@ -63,11 +64,10 @@
             padding-left: 8px;
             border-left: 3px solid #666;
             font-weight: bold;
-            display: flex;
-            justify-content: space-between;
+            display: flex; justify-content: space-between;
         }
 
-        /* --- 成員卡片 --- */
+        /* --- ✨ 成員卡片掃光特效 ✨ --- */
         .card { 
             background: #2d2d32; 
             border-radius: 4px; 
@@ -81,30 +81,55 @@
             display: flex; 
             flex-direction: column;
             overflow: hidden; 
-            transition: transform 0.2s;
+            transition: transform 0.2s, background 0.2s;
         }
 
+        /* 掃光層 */
+        .card::after {
+            content: "";
+            position: absolute;
+            top: 0; left: -150%; width: 150%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.01) 20%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.01) 80%, transparent);
+            transform: skewX(-25deg);
+            animation: softScan 5s infinite linear;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes softScan { 0% { left: -150%; } 100% { left: 150%; } }
+
         .card-content {
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-            font-size: 0.95rem;
-            white-space: nowrap; 
-            overflow: hidden; 
-            z-index: 2; 
-            margin-bottom: 6px;
+            display: flex; align-items: center; gap: 12px; font-size: 0.95rem;
+            white-space: nowrap; overflow: hidden; z-index: 2; margin-bottom: 6px;
         }
 
         .card .name { font-weight: bold; color: #ffffff; font-size: 1rem; }
         .card .power-text { color: #bbbbbb; font-size: 0.8rem; opacity: 0.9; }
         .card .style-tag { font-size: 0.95rem; font-weight: 800; }
+        .card:hover { transform: translateY(-2px); background: #35353b; }
 
+        /* --- ✨ 隊伍看板流光特效 ✨ --- */
         .board { flex-grow: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         .column { 
             position: relative; background: #252529; border-radius: 12px; padding: 12px; min-height: 450px; 
-            display: flex; flex-direction: column; overflow: hidden;
+            display: flex; flex-direction: column; overflow: hidden; z-index: 1;
         }
-        .stat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 5px; }
+
+        /* 旋轉流光背景層 */
+        .column::before {
+            content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: conic-gradient(transparent, transparent, transparent, #00d4ff);
+            animation: rotate var(--glow-speed) linear infinite; z-index: -2;
+        }
+        .column[id*="sat"]::before { background: conic-gradient(transparent, transparent, transparent, var(--sat-color)); }
+        .column[id*="sun"]::before { background: conic-gradient(transparent, transparent, transparent, var(--sun-color)); }
+        
+        /* 遮罩，讓流光只出現在邊緣 */
+        .column::after { content: ""; position: absolute; inset: 2px; background: #252529; border-radius: 10px; z-index: -1; }
+        
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+
+        .stat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 5px; z-index: 2; }
         .stat-bar { flex-grow: 1; background: rgba(255,255,255,0.05); text-align: center; font-size: 0.8rem; padding: 6px; border-radius: 5px; border: 1px dashed #555; }
         
         .sort-btn { 
@@ -152,7 +177,6 @@
             </div>
             
             <div class="total-counter" id="totalCountDisplay">📊 已報名總數：0 人</div>
-
             <hr style="border: 0.5px solid #333; margin: 15px 0;">
             <div id="poolContainer"></div>
         </div>
@@ -199,16 +223,11 @@
     let globalAssigns = {};
     let isAdmin = false;
 
-    // --- 權限檢查函數 ---
     const checkAdmin = () => {
         if (isAdmin) return true;
         const password = prompt("管理者密碼：");
-        if (password === "0404") {
-            isAdmin = true;
-            return true;
-        }
-        alert("密碼錯誤，無權限進行此操作。");
-        return false;
+        if (password === "0404") { isAdmin = true; return true; }
+        alert("無權限"); return false;
     };
 
     onValue(assignsRef, (snap) => { globalAssigns = snap.val() || {}; renderPool(); renderTeams(); });
@@ -221,8 +240,8 @@
         const counter = document.getElementById('totalCountDisplay');
         container.innerHTML = '';
         if (!data) { counter.innerText = "📊 已報名總數：0 人"; return; }
-
         counter.innerText = `📊 已報名總數：${Object.keys(data).length} 人`;
+
         const groups = { '其他': [] };
         mainStyles.forEach(s => groups[s] = []);
         for (let id in data) {
@@ -320,30 +339,14 @@
     };
 
     window.unassign = (aid) => remove(ref(db, `assigns/${aid}`));
-    
-    // --- 受密碼保護的操作 ---
-    window.deleteMember = (mid) => { 
-        if(checkAdmin() && confirm("確定從名冊中刪除此成員？")) {
-            remove(ref(db, `members/${mid}`));
-            for(let aid in globalAssigns) if(globalAssigns[aid].mid === mid) remove(ref(db, `assigns/${aid}`));
-        } 
-    };
-    
-    document.getElementById('resetBtn').onclick = () => { 
-        if(checkAdmin() && confirm("確定清空所有隊伍分配？")) set(assignsRef, null); 
-    };
-    
-    document.getElementById('clearAllBtn').onclick = () => { 
-        if(checkAdmin() && confirm("⚠️ 警告：這將清空【所有成員名冊】與【分配紀錄】，確定嗎？")) { 
-            set(membersRef, null); set(assignsRef, null); 
-        } 
-    };
+    window.deleteMember = (mid) => { if(checkAdmin() && confirm("刪除成員？")) remove(ref(db, `members/${mid}`)); };
+    document.getElementById('resetBtn').onclick = () => { if(checkAdmin() && confirm("清空分配？")) set(assignsRef, null); };
+    document.getElementById('clearAllBtn').onclick = () => { if(checkAdmin() && confirm("⚠️ 全部清空名冊？")) { set(membersRef, null); set(assignsRef, null); } };
 
     document.getElementById('exportBtn').onclick = () => {
-        let res = "🌸 墨雨笙花 百業戰配置\n";
+        let res = "🌸 墨雨笙花 配置結果\n";
         ['sat1', 'sat2', 'sun1', 'sun2'].forEach(id => {
-            const title = document.getElementById('col-'+id).querySelector('h2').innerText;
-            res += `\n【 ${title} 】\n`;
+            res += `\n【 ${document.getElementById('col-'+id).querySelector('h2').innerText} 】\n`;
             document.getElementById(id).querySelectorAll('.card').forEach(c => {
                 res += `- ${c.querySelector('.name').innerText} (${c.querySelector('.style-tag').innerText.replace('| ','')})\n`;
             });
