@@ -25,7 +25,7 @@
         
         /* --- 待命成員容器 --- */
         .pool-section { 
-            width: 200px; 
+            width: 220px; /* 稍微調整寬度以容納單行文字 */
             background: #252529; 
             padding: 12px; 
             border-radius: 12px; 
@@ -36,23 +36,22 @@
             flex-direction: column;
         }
 
-        /* --- 成員卡片：左至右柔和掃光 --- */
+        /* --- 成員卡片：窄版 + 單行文字 + 柔和掃光 --- */
         .card { 
             background: #2d2d32; 
-            border-radius: 6px; 
-            padding: 8px 10px; 
-            margin-bottom: 8px; 
+            border-radius: 4px; 
+            padding: 6px 8px; 
+            margin-bottom: 6px; 
             border-left: 4px solid #007bff; 
             position: relative; 
             border: 1px solid #3d3d42;
             display: flex; 
-            flex-direction: column;
-            gap: 4px;
-            overflow: hidden; /* 確保光束不出框 */
+            align-items: center; /* 垂直置中 */
+            overflow: hidden; 
             transition: transform 0.2s;
         }
 
-        /* 柔和橫向掃光實作 */
+        /* 柔和橫向掃光 */
         .card::after {
             content: "";
             position: absolute;
@@ -60,16 +59,15 @@
             left: -150%;
             width: 150%;
             height: 100%;
-            /* 改為向右傾斜的超柔和漸層 */
             background: linear-gradient(
                 90deg, 
                 transparent, 
                 rgba(255, 255, 255, 0.01) 30%, 
-                rgba(255, 255, 255, 0.08) 50%, 
+                rgba(255, 255, 255, 0.1) 50%, 
                 rgba(255, 255, 255, 0.01) 70%, 
                 transparent
             );
-            transform: skewX(-20deg); /* 傾斜讓光影更自然 */
+            transform: skewX(-20deg);
             animation: softScan 4s infinite linear;
             pointer-events: none;
             z-index: 1;
@@ -80,26 +78,29 @@
             100% { left: 150%; }
         }
 
-        /* 懸停效果 */
-        .card:hover { 
-            background: #35353b; 
-            transform: translateX(3px); 
-            border-color: #555;
-        }
-        
-        /* 內容層級確保 */
-        .card p, .card .assign-btns, .card .del-btn {
+        /* 強制文字單行顯示 */
+        .card-content {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
             position: relative;
             z-index: 2;
+            flex-grow: 1;
         }
 
-        .card .name { font-weight: bold; }
-        .card .info-text { color: #aaa; font-size: 0.8rem; }
+        .card .name { font-weight: bold; color: #fff; }
+        .card .info-text { color: #aaa; font-size: 0.75rem; }
 
-        /* 其餘板塊保持原樣 */
+        .card:hover { background: #35353b; transform: translateX(3px); }
+
+        /* 其餘區塊設定 */
         .board { flex-grow: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-        .day-check-group { margin: 10px 0; display: flex; justify-content: center; gap: 12px; }
-        .day-check { display: flex; align-items: center; font-size: 0.85rem; cursor: pointer; gap: 4px; }
+        .day-check-group { margin: 10px 0; display: flex; justify-content: center; gap: 8px; }
+        .day-check { display: flex; align-items: center; font-size: 0.8rem; cursor: pointer; gap: 3px; }
 
         .column { 
             position: relative; background: #252529; border-radius: 12px; padding: 12px; min-height: 400px; 
@@ -119,15 +120,16 @@
         .item-list { flex-grow: 1; }
         
         button { cursor: pointer; border: none; transition: 0.2s; }
-        .assign-btns { display: flex; gap: 3px; width: 100%; }
-        .assign-btns button { padding: 3px 0; font-size: 11px; border-radius: 3px; color: white; flex: 1; font-weight: bold; }
+        .assign-btns { display: flex; gap: 2px; margin-top: 4px; z-index: 5; }
+        .assign-btns button { padding: 2px 4px; font-size: 10px; border-radius: 3px; color: white; font-weight: bold; }
         .btn-sat { background: #ff4d6d; }
         .btn-sun { background: #4361ee; }
         .btn-assigned { background: #444 !important; color: #888 !important; }
-        .del-btn { position: absolute; top: 5px; right: 5px; background: rgba(255, 77, 77, 0.6); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+        .del-btn { position: absolute; top: 2px; right: 2px; background: rgba(255, 77, 77, 0.6); color: white; border-radius: 50%; width: 14px; height: 14px; font-size: 9px; display: flex; align-items: center; justify-content: center; z-index: 10; }
         
-        .input-group input { width: 100%; padding: 8px; margin-bottom: 6px; box-sizing: border-box; border: 1px solid #444; border-radius: 4px; background: #121214; color: #fff; font-size: 0.85rem; }
-        #addBtn { width: 100%; background: #4e4e54; color: white; padding: 10px; border-radius: 4px; font-weight: bold; }
+        /* 輸入框微調 */
+        .input-group input { width: 100%; padding: 6px; margin-bottom: 5px; border: 1px solid #444; border-radius: 4px; background: #121214; color: #fff; font-size: 0.8rem; }
+        #addBtn { width: 100%; background: #4e4e54; color: white; padding: 8px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
         .export-section { margin-top: 20px; text-align: center; padding-bottom: 40px; }
         #output { width: 80%; height: 120px; display: none; margin: 15px auto; background: #121214; color: #00ff00; padding: 10px; }
     </style>
@@ -233,6 +235,8 @@
                 const card = document.createElement('div');
                 card.className = "card";
                 card.style.borderLeftColor = getColors(m.style).main;
+                card.style.flexDirection = "column"; /* 讓按鈕排在文字下方，保持卡片窄度 */
+                card.style.alignItems = "flex-start";
                 
                 let btns = '';
                 if(m.days.includes('六')) {
@@ -246,8 +250,10 @@
 
                 card.innerHTML = `
                     <button class="del-btn" onclick="deleteMember('${id}')">✕</button>
-                    <p class="name">${m.name}</p>
-                    <p class="info-text">戰:${m.power.toLocaleString()} | ${m.style}</p>
+                    <div class="card-content">
+                        <span class="name">${m.name}</span>
+                        <span class="info-text">${m.power.toLocaleString()} | ${m.style}</span>
+                    </div>
                     <div class="assign-btns">${btns}</div>
                 `;
                 pool.appendChild(card);
@@ -272,8 +278,10 @@
             card.style.backgroundColor = colors.light;
             card.innerHTML = `
                 <button class="del-btn" onclick="unassign('${aid}')">✕</button>
-                <p class="name">${a.name}</p>
-                <p class="info-text" style="color:${colors.main}">戰力: ${a.power.toLocaleString()} | ${a.style}</p>
+                <div class="card-content">
+                    <span class="name">${a.name}</span>
+                    <span class="info-text">${a.power.toLocaleString()} | ${a.style}</span>
+                </div>
             `;
             container.appendChild(card);
         }
@@ -282,13 +290,13 @@
         });
     }
 
+    // --- 其餘 Firebase 邏輯保持不變 ---
     window.assign = async (mid, targetTeam) => {
         const targetPrefix = targetTeam.substring(0, 3); 
         if (Object.values(globalAssigns).some(a => a.mid === mid && a.target.startsWith(targetPrefix))) return alert("⚠️ 本日已分配");
         const mSnap = await get(ref(db, `members/${mid}`));
         if(mSnap.exists()) push(assignsRef, { ...mSnap.val(), mid: mid, target: targetTeam });
     };
-
     document.getElementById('addBtn').onclick = () => {
         const name = document.getElementById('pName').value, power = parseInt(document.getElementById('pPower').value), style = document.getElementById('pStyle').value;
         const days = Array.from(document.querySelectorAll('input[name="pDay"]:checked')).map(n => n.value);
@@ -296,23 +304,17 @@
         push(membersRef, { name, power, style, days });
         document.getElementById('pName').value = ''; document.getElementById('pPower').value = '';
     };
-
     window.unassign = (aid) => remove(ref(db, `assigns/${aid}`));
     window.deleteMember = (mid) => {
-        if(checkAdmin() && confirm("確定從名冊中刪除此成員？")) {
+        if(checkAdmin() && confirm("確定刪除此成員？")) {
             remove(ref(db, `members/${mid}`));
             for(let aid in globalAssigns) if(globalAssigns[aid].mid === mid) remove(ref(db, `assigns/${aid}`));
         }
     };
-
-    document.getElementById('resetBtn').onclick = () => { if(checkAdmin() && confirm("確定要清空『所有隊伍分配』嗎？")) set(assignsRef, null); };
-    document.getElementById('clearAllBtn').onclick = () => {
-        if(checkAdmin() && confirm("⚠️ 注意！這會刪除『整個名冊』和『所有隊伍』！")) {
-            set(membersRef, null); set(assignsRef, null);
-        }
-    };
+    document.getElementById('resetBtn').onclick = () => { if(checkAdmin() && confirm("確定清空分配？")) set(assignsRef, null); };
+    document.getElementById('clearAllBtn').onclick = () => { if(checkAdmin() && confirm("確定全部清空？")) { set(membersRef, null); set(assignsRef, null); } };
     document.getElementById('exportBtn').onclick = () => {
-        let res = "--- 🌸 墨雨笙花 百業戰配置結果 ---\n";
+        let res = "--- 🌸 配置結果 ---\n";
         ['sat1', 'sat2', 'sun1', 'sun2'].forEach(id => {
             res += `\n【 ${id} 】\n`;
             document.getElementById(id).querySelectorAll('.card').forEach(c => {
