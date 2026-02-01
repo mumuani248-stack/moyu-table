@@ -180,7 +180,7 @@
 
     document.getElementById('editAnnoBtn').onclick = () => {
         if(!isAdmin) { const p = prompt("管理密碼："); if(p==="0404") isAdmin=true; else return alert("無權限"); }
-        const newDate = prompt("請輸入本週百業日期 (例如：2/7-2/8)：");
+        const newDate = prompt("請輸入本週百業戰日期 (例如：2/7-2/8)：");
         const newMsg = prompt("請輸入給成員的留言：");
         if(newDate !== null && newMsg !== null) {
             set(annoRef, { date: "📅 " + newDate, msg: "💬 " + newMsg });
