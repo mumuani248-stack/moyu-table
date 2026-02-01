@@ -4,140 +4,64 @@
     <meta charset="UTF-8">
     <title>墨雨笙花百業戰配置表</title>
     <style>
+        /* --- 原有樣式保留並新增公告樣式 --- */
         :root {
             --sat-color: #ff4d6d;
             --sun-color: #4361ee;
             --glow-speed: 3s;
             --bg-dark: #1a1a1e;
+            --admin-gold: #ffd700;
         }
 
         * { box-sizing: border-box; }
-
-        body { 
-            font-family: "Microsoft JhengHei", sans-serif; 
-            background: var(--bg-dark); 
-            padding: 10px; 
-            color: #e0e0e0; 
-        }
+        body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg-dark); padding: 10px; color: #e0e0e0; }
         
-        /* --- 🌸 掃光動畫 (關鍵修復) --- */
-        @keyframes softScan { 
-            0% { left: -150%; } 
-            100% { left: 150%; } 
-        }
-
-        /* --- 客製化捲軸 --- */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+        @keyframes softScan { 0% { left: -150%; } 100% { left: 150%; } }
 
         .container { max-width: 1600px; margin: auto; }
-        h1 { text-align: center; color: #fff; margin-bottom: 20px; letter-spacing: 2px; font-size: 1.8rem; }
-        .main-layout { display: flex; gap: 15px; align-items: flex-start; }
-        
-        .pool-section { 
-            width: 320px; 
-            background: #252529; 
-            padding: 15px; 
-            border-radius: 12px; 
-            position: sticky; 
-            top: 10px; 
+        h1 { text-align: center; color: #fff; margin-bottom: 10px; letter-spacing: 2px; font-size: 1.8rem; }
+
+        /* --- 📢 公告區塊樣式 --- */
+        .announcement-box {
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid #444;
-            max-height: 95vh;
-            overflow-y: auto;
-        }
-
-        /* --- 🛠️ 修正：六日框框對齊 --- */
-        .day-checkbox-group {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-            margin: 15px 0;
-            width: 100%;
-        }
-        .day-checkbox-group label {
-            display: flex;
-            flex-direction: column; /* 讓框在文字上方 */
-            align-items: center;
-            cursor: pointer;
-            font-size: 1rem;
-            color: #fff;
-            gap: 5px;
-        }
-        .day-checkbox-group input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
-        .total-counter {
-            background: rgba(0, 212, 255, 0.1);
-            border: 1px solid #00d4ff;
-            border-radius: 6px;
-            padding: 8px;
-            margin: 10px 0;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
             text-align: center;
-            font-size: 0.95rem;
-            color: #00d4ff;
-            font-weight: bold;
+            position: relative;
         }
+        .anno-text { font-size: 1.2rem; color: #00d4ff; font-weight: bold; margin: 5px 0; min-height: 1.5rem; }
+        .anno-sub { font-size: 0.95rem; color: #aaa; }
+        .admin-edit-btn { 
+            position: absolute; top: 10px; right: 10px; 
+            background: none; border: 1px solid #666; color: #666; 
+            padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;
+        }
+        .admin-edit-btn:hover { border-color: var(--admin-gold); color: var(--admin-gold); }
 
+        /* --- 佈局與其他樣式 --- */
+        .main-layout { display: flex; gap: 15px; align-items: flex-start; }
+        .pool-section { width: 320px; background: #252529; padding: 15px; border-radius: 12px; position: sticky; top: 10px; border: 1px solid #444; max-height: 95vh; overflow-y: auto; }
+        
+        .day-checkbox-group { display: flex; justify-content: center; align-items: center; gap: 20px; margin: 15px 0; width: 100%; }
+        .day-checkbox-group label { display: flex; flex-direction: column; align-items: center; cursor: pointer; font-size: 1rem; color: #fff; gap: 5px; }
+        .day-checkbox-group input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+
+        .total-counter { background: rgba(0, 212, 255, 0.1); border: 1px solid #00d4ff; border-radius: 6px; padding: 8px; margin: 10px 0; text-align: center; font-size: 0.95rem; color: #00d4ff; font-weight: bold; }
         .ctrl-btn-group { display: flex; gap: 8px; margin-bottom: 10px; }
-        .small-ctrl-btn {
-            flex: 1; padding: 6px; background: #3a3a3f; color: #ccc; 
-            border: 1px solid #555; border-radius: 4px; font-size: 0.8rem; 
-            cursor: pointer; transition: 0.2s; font-weight: bold;
-        }
-        .small-ctrl-btn:hover { background: #4e4e54; color: #fff; }
+        .small-ctrl-btn { flex: 1; padding: 6px; background: #3a3a3f; color: #ccc; border: 1px solid #555; border-radius: 4px; font-size: 0.8rem; cursor: pointer; font-weight: bold; }
 
-        /* 分類標題 */
-        .style-group-header {
-            font-size: 1.15rem; 
-            font-weight: 900;
-            margin: 8px 0 4px 0;
-            padding: 12px 15px;
-            background: #2d2d32;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex; 
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.2s;
-            border: 1px solid #3d3d42;
-        }
+        .style-group-header { font-size: 1.15rem; font-weight: 900; margin: 8px 0 4px 0; padding: 12px 15px; background: #2d2d32; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid #3d3d42; }
         .style-group-header .arrow { transition: transform 0.3s; font-size: 0.8rem; }
         .style-group-header.collapsed .arrow { transform: rotate(-90deg); }
-
-        .style-group-content {
-            overflow: hidden;
-            transition: max-height 0.4s ease-out;
-            max-height: 2000px;
-        }
+        .style-group-content { overflow: hidden; transition: max-height 0.4s ease-out; max-height: 2000px; }
         .style-group-content.hidden { max-height: 0; }
 
-        /* --- 🌸 成員卡片 + 掃光特效 --- */
-        .card { 
-            background: #2d2d32; 
-            border-radius: 4px; 
-            padding: 10px 12px; 
-            margin: 8px 0; 
-            border-left: 6px solid #007bff; 
-            position: relative; 
-            overflow: hidden; 
-        }
-        .card::after {
-            content: ""; position: absolute; top: 0; left: -150%; width: 150%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08) 50%, transparent);
-            transform: skewX(-25deg); 
-            animation: softScan 6s infinite linear; /* 掃光動畫 */
-        }
-
+        .card { background: #2d2d32; border-radius: 4px; padding: 10px 12px; margin: 8px 0; border-left: 6px solid #007bff; position: relative; overflow: hidden; }
+        .card::after { content: ""; position: absolute; top: 0; left: -150%; width: 150%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08) 50%, transparent); transform: skewX(-25deg); animation: softScan 6s infinite linear; }
         .card-content { display: flex; align-items: center; gap: 10px; z-index: 2; position: relative; }
         .card .name { font-weight: bold; color: #ffffff; }
-        .card .power-text { color: #aaa; font-size: 0.85rem; }
-        .card .style-tag { font-weight: 800; font-size: 0.9rem; }
 
         .assign-btns { display: flex; gap: 4px; margin-top: 8px; z-index: 5; position: relative; }
         .assign-btns button { flex: 1; padding: 5px; font-size: 11px; border-radius: 4px; border: none; cursor: pointer; color: white; font-weight: bold; }
@@ -147,17 +71,9 @@
 
         .del-btn { position: absolute; top: 5px; right: 5px; background: #ff4d6d; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; border: none; cursor: pointer; z-index: 10; }
 
-        /* --- 隊伍看板 --- */
         .board { flex-grow: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-        .column { 
-            position: relative; background: #252529; border-radius: 12px; padding: 15px; min-height: 450px; 
-            overflow: hidden; z-index: 1;
-        }
-        .column::before {
-            content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: conic-gradient(transparent, transparent, transparent, #00d4ff);
-            animation: rotate var(--glow-speed) linear infinite; z-index: -2;
-        }
+        .column { position: relative; background: #252529; border-radius: 12px; padding: 15px; min-height: 450px; overflow: hidden; z-index: 1; }
+        .column::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, transparent, transparent, #00d4ff); animation: rotate var(--glow-speed) linear infinite; z-index: -2; }
         .column[id*="sat"]::before { background: conic-gradient(transparent, transparent, transparent, var(--sat-color)); }
         .column[id*="sun"]::before { background: conic-gradient(transparent, transparent, transparent, var(--sun-color)); }
         .column::after { content: ""; position: absolute; inset: 2px; background: #252529; border-radius: 10px; z-index: -1; }
@@ -178,6 +94,13 @@
 
 <div class="container">
     <h1>🌸 墨雨笙花 · 百業戰配置</h1>
+
+    <div class="announcement-box">
+        <button class="admin-edit-btn" id="editAnnoBtn">⚙️ 編輯公告 (管理員)</button>
+        <div class="anno-text" id="displayDate">📅 本週日期載入中...</div>
+        <div class="anno-sub" id="displayMsg">💬 暫無留言</div>
+    </div>
+
     <div class="main-layout">
         <div class="pool-section">
             <div class="input-group">
@@ -188,12 +111,10 @@
                     <option value="威威"><option value="玉玉"><option value="霖霖">
                     <option value="無名"><option value="九九"><option value="雙刀">
                 </datalist>
-
                 <div class="day-checkbox-group">
                     <label><input type="checkbox" name="pDay" value="六"> 六</label>
                     <label><input type="checkbox" name="pDay" value="日"> 日</label>
                 </div>
-
                 <button id="addBtn">✨ 加入名冊</button>
             </div>
             
@@ -203,7 +124,6 @@
                 <button class="small-ctrl-btn" onclick="toggleAllGroups(false)">📂 全部展開</button>
                 <button class="small-ctrl-btn" onclick="toggleAllGroups(true)">📁 全部摺疊</button>
             </div>
-
             <div id="poolContainer"></div>
         </div>
 
@@ -243,6 +163,7 @@
     const db = getDatabase(app);
     const membersRef = ref(db, 'members');
     const assignsRef = ref(db, 'assigns');
+    const annoRef = ref(db, 'announcement'); // 📢 公告路徑
 
     const mainStyles = ['九九', '無名', '威威', '霖霖', '玉玉', '雙刀'];
     const styleColors = { '九九': '#4d94ff', '無名': '#33ccff', '威威': '#ffaa33', '霖霖': '#44ff44', '玉玉': '#00cc66', '雙刀': '#cc66ff' };
@@ -250,6 +171,23 @@
     let globalAssigns = {};
     let isAdmin = false;
 
+    // --- 📢 公告邏輯 ---
+    onValue(annoRef, (snap) => {
+        const data = snap.val() || { date: "📅 未設定日期", msg: "💬 暫無留言" };
+        document.getElementById('displayDate').innerText = data.date;
+        document.getElementById('displayMsg').innerText = data.msg;
+    });
+
+    document.getElementById('editAnnoBtn').onclick = () => {
+        if(!isAdmin) { const p = prompt("管理密碼："); if(p==="0404") isAdmin=true; else return alert("無權限"); }
+        const newDate = prompt("請輸入本週百業日期 (例如：2/7-2/8)：");
+        const newMsg = prompt("請輸入給成員的留言：");
+        if(newDate !== null && newMsg !== null) {
+            set(annoRef, { date: "📅 " + newDate, msg: "💬 " + newMsg });
+        }
+    };
+
+    // --- 原有邏輯 ---
     onValue(assignsRef, (snap) => { globalAssigns = snap.val() || {}; renderPool(); renderTeams(); });
     onValue(membersRef, () => renderPool());
 
@@ -338,7 +276,6 @@
                 `;
                 contentDiv.appendChild(card);
             });
-
             container.appendChild(header);
             container.appendChild(contentDiv);
         });
@@ -398,11 +335,19 @@
         if(!isAdmin) { const p = prompt("管理密碼："); if(p==="0404") isAdmin=true; else return alert("無權限"); }
         if(confirm("刪除此成員？")) remove(ref(db, `members/${mid}`)); 
     };
-    document.getElementById('resetBtn').onclick = () => { if(confirm("清空目前所有隊伍分配？")) set(assignsRef, null); };
-    document.getElementById('clearAllBtn').onclick = () => { if(confirm("危險！確定要清空整份名冊嗎？")) { set(membersRef, null); set(assignsRef, null); } };
+    document.getElementById('resetBtn').onclick = () => { 
+        if(!isAdmin) { const p = prompt("管理密碼："); if(p==="0404") isAdmin=true; else return alert("無權限"); }
+        if(confirm("清空目前所有隊伍分配？")) set(assignsRef, null); 
+    };
+    document.getElementById('clearAllBtn').onclick = () => { 
+        if(!isAdmin) { const p = prompt("管理密碼："); if(p==="0404") isAdmin=true; else return alert("無權限"); }
+        if(confirm("危險！確定要清空整份名冊嗎？")) { set(membersRef, null); set(assignsRef, null); } 
+    };
 
     document.getElementById('exportBtn').onclick = () => {
         let res = "🌸 墨雨笙花 配置結果\n";
+        res += document.getElementById('displayDate').innerText + "\n";
+        res += document.getElementById('displayMsg').innerText + "\n";
         ['sat1', 'sat2', 'sun1', 'sun2'].forEach(id => {
             const title = document.getElementById('col-'+id).querySelector('h2').innerText;
             res += `\n【 ${title} 】\n`;
