@@ -58,6 +58,9 @@
         .style-group-content { overflow: hidden; transition: max-height 0.4s ease-out; max-height: 2000px; }
         .style-group-content.hidden { max-height: 0; }
 
+        /* ✨ 提示文字樣式 */
+        .unassigned-tip { color: #ff4d4d; font-size: 0.85rem; font-weight: bold; margin-left: 10px; }
+
         .card { background: #2d2d32; border-radius: 4px; padding: 10px 12px; margin: 8px 0; border-left: 6px solid #007bff; position: relative; overflow: hidden; }
         .card::after { content: ""; position: absolute; top: 0; left: -150%; width: 150%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08) 50%, transparent); transform: skewX(-25deg); animation: softScan 6s infinite linear; }
         .card-content { display: flex; align-items: center; gap: 10px; z-index: 2; position: relative; }
@@ -163,7 +166,7 @@
     const db = getDatabase(app);
     const membersRef = ref(db, 'members');
     const assignsRef = ref(db, 'assigns');
-    const annoRef = ref(db, 'announcement'); // 📢 公告路徑
+    const annoRef = ref(db, 'announcement'); 
 
     const mainStyles = ['九九', '無名', '威威', '霖霖', '玉玉', '雙刀'];
     const styleColors = { '九九': '#4d94ff', '無名': '#33ccff', '威威': '#ffaa33', '霖霖': '#44ff44', '玉玉': '#00cc66', '雙刀': '#cc66ff' };
@@ -171,7 +174,6 @@
     let globalAssigns = {};
     let isAdmin = false;
 
-    // --- 📢 公告邏輯 ---
     onValue(annoRef, (snap) => {
         const data = snap.val() || { date: "📅 未設定日期", msg: "💬 暫無留言" };
         document.getElementById('displayDate').innerText = data.date;
@@ -187,7 +189,6 @@
         }
     };
 
-    // --- 原有邏輯 ---
     onValue(assignsRef, (snap) => { globalAssigns = snap.val() || {}; renderPool(); renderTeams(); });
     onValue(membersRef, () => renderPool());
 
@@ -232,6 +233,16 @@
             const members = groups[styleName];
             if (members.length === 0) return;
 
+            // ✨ 核心修正：計算該流派有幾個人還沒被排進去
+            const unassignedCount = members.filter(m => {
+                const isSatAssigned = Object.values(globalAssigns).some(a => a.mid === m.id && a.target.startsWith('sat'));
+                const isSunAssigned = Object.values(globalAssigns).some(a => a.mid === m.id && a.target.startsWith('sun'));
+                let missing = false;
+                if(m.days.includes('六') && !isSatAssigned) missing = true;
+                if(m.days.includes('日') && !isSunAssigned) missing = true;
+                return missing;
+            }).length;
+
             const isCollapsed = collapsedStates[styleName] || false;
             const color = styleColors[styleName] || '#00d4ff';
 
@@ -242,7 +253,10 @@
             header.onclick = () => toggleStyleGroup(styleName);
             header.style.borderLeft = `6px solid ${color}`;
             header.style.color = color;
-            header.innerHTML = `<span>${styleName}</span> <div style="display:flex; align-items:center; gap:10px;"><span style="font-size:0.9rem; opacity:0.8;">${members.length} 人</span><span class="arrow">▼</span></div>`;
+            
+            // ✨ 在標題注入剩餘人數提示
+            const tipHtml = unassignedCount > 0 ? `<span class="unassigned-tip"> (剩餘 ${unassignedCount} 人未排)</span>` : '';
+            header.innerHTML = `<span>${styleName}${tipHtml}</span> <div style="display:flex; align-items:center; gap:10px;"><span style="font-size:0.9rem; opacity:0.8;">${members.length} 人</span><span class="arrow">▼</span></div>`;
             
             const contentDiv = document.createElement('div');
             contentDiv.className = `style-group-content ${isCollapsed ? 'hidden' : ''}`;
